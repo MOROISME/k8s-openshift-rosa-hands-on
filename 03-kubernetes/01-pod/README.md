@@ -44,6 +44,35 @@ kubectl apply -f 03-kubernetes/manifests/01-pod.yaml
 
 **目的:** Pod の中を Linux シェルのように覗き、障害切り分けや「中身の確認」をする。
 
+#### 「中」とはどこか（入れ子のイメージ）
+
+Minikube（`--driver=docker`）では、だいたい次の入れ子になっています。
+
+```text
+あなたの Mac
+  └── Docker Desktop
+        └── Minikube 用のコンテナ（＝ノードの実体）
+              └── Pod（例: hello-pod）
+                    └── アプリコンテナ（例: nginx）  ← exec で入る「中」
+```
+
+| 言うとき | 指している場所 |
+|----------|----------------|
+| Docker の中 | Docker Desktop が動かしている世界（Minikube のノードもここにいる） |
+| Pod の中 | K8s 上の単位。中に 1 つ以上のコンテナがある |
+| **`exec` の「中」** | **その Pod 内のアプリコンテナ（今回は nginx）の Linux 環境** |
+
+覚え方:
+
+- Pod ≈ 「箱のグループの名前」
+- コンテナ ≈ 「実際にシェルがある中身」
+- `kubectl exec` ≈ 「その中身の OS に入る」
+
+つまり「Docker の中の Pod の中」というより、  
+**「Minikube クラスタ上の Pod の中にある、nginx コンテナの中」** です。Docker はその外側の土台です。
+
+#### 入り方
+
 ```bash
 kubectl exec -it hello-pod -- /bin/sh
 ```
