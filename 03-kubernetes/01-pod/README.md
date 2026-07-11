@@ -40,16 +40,69 @@ kubectl apply -f 03-kubernetes/manifests/01-pod.yaml
 | `kubectl describe pod NAME` | 詳細と Events | 「なぜその状態か」を読む（障害の入口） |
 | `kubectl logs NAME` | コンテナ標準出力 | アプリが出したログを見る |
 
-任意（コンテナの中に入る）:
+### 任意: 対話型でコンテナの中に入る（`kubectl exec -it`）
+
+**目的:** Pod の中を Linux シェルのように覗き、障害切り分けや「中身の確認」をする。
 
 ```bash
 kubectl exec -it hello-pod -- /bin/sh
-# exit で抜ける
 ```
 
-| コマンド | 意味 | 目的 |
-|----------|------|------|
-| `kubectl exec -it POD -- /bin/sh` | Pod 内でシェル起動 | 中のファイル・プロセスを Linux 同様に確認（`-it` は対話用） |
+| 部分 | 意味 | 目的 |
+|------|------|------|
+| `kubectl exec` | Pod 内でコマンドを実行する | 外から中を操作する |
+| `-i` | 標準入力を繋ぐ | キー入力を中に渡す |
+| `-t` | 疑似ターミナルを割り当てる | 対話シェルとして使える |
+| `-it` | 上の 2 つセット | **対話型セッション**にする定番 |
+| `hello-pod` | 対象 Pod | 入る先 |
+| `--` | 区切り | 以降は「Pod の中で実行するコマンド」 |
+| `/bin/sh` | シェルを起動 | bash が無いイメージ（alpine 等）でも使えることが多い |
+
+プロンプトが変わったら **コンテナの中**にいます。抜けるときは:
+
+```bash
+exit
+# または Ctrl+D
+```
+
+#### 対話中にできること（例）
+
+`nginx:alpine` の中では、Step 01 の Linux コマンドがだいたい使えます。
+
+| やりたいこと | 例 | 目的 |
+|--------------|-----|------|
+| 今どこにいるか | `pwd` | 作業場所の確認 |
+| ファイル一覧 | `ls -la` / `ls -la /usr/share/nginx/html` | 公開ファイルや設定の有無 |
+| ファイルの中身 | `cat /usr/share/nginx/html/index.html` | nginx が返している HTML を見る |
+| プロセス確認 | `ps aux` | nginx など何が動いているか |
+| 自分は誰か | `whoami` / `id` | コンテナ内のユーザー・UID |
+| 疎通 | `wget -qO- http://127.0.0.1/` や `curl`（入っていれば） | **コンテナの内側から**アプリ応答を確認 |
+| 設定を覗く | `ls /etc/nginx` / `cat /etc/nginx/nginx.conf` | 設定ファイルの場所を知る |
+| 環境変数 | `env` | 渡されている設定値の確認（ConfigMap 演習でも使う） |
+
+対話に入らず、**1 コマンドだけ中で実行**することもできます（現場でよく使う）:
+
+```bash
+kubectl exec hello-pod -- ls -la /usr/share/nginx/html
+kubectl exec hello-pod -- cat /usr/share/nginx/html/index.html
+kubectl exec hello-pod -- ps aux
+```
+
+| 形 | 用途 |
+|----|------|
+| `kubectl exec -it POD -- /bin/sh` | 中を manifest に歩き回って調べる（対話） |
+| `kubectl exec POD -- コマンド` | 確認したいことだけ実行してすぐ終わる |
+
+#### できないこと・注意
+
+| 注意 | 理由 |
+|------|------|
+| 本番で常用しない | 中を直接いじると「宣言（YAML）と実体」がずれる |
+| 永続しない変更が多い | コンテナ再作成で中の手動変更は消えることが多い |
+| シェルが無いイメージもある | その場合は `exec` できない。別のデバッグ用イメージを使う |
+| 権限で拒否されることがある | RBAC / SCC（OpenShift）で制限されている |
+
+覚える一言: **対話型 `exec` は「中を見て確かめる」ための道具。恒久対応はマニフェスト側で行う。**
 
 片付け:
 
@@ -87,3 +140,4 @@ hello-pod   1/1     Running   0          ...
 
 - [ ] `Running` / `1/1` を確認した
 - [ ] `get` / `describe` / `logs` それぞれの目的を説明できる
+- [ ] （任意）`kubectl exec -it` で中に入り、`ls` / `ps` などが使えること・本番常用しない理由を説明できる
