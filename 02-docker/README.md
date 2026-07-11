@@ -67,6 +67,63 @@ curl -I http://localhost:8080
 
 **この節の目的:** Dockerfile からイメージをビルドし、「自分のアプリをコンテナ化する」最小体験をする。
 
+#### Dockerfile とは
+
+**イメージをどう作るかを書いたレシピ**です。  
+`docker build` は、このファイルの指示を上から実行してイメージを積み上げます。
+
+この演習のファイル: [`exercises/Dockerfile`](./exercises/Dockerfile)
+
+```dockerfile
+# 公式 nginx（Alpine 版）を土台にする
+FROM nginx:alpine
+
+# 自分の HTML を nginx の公開ディレクトリへコピーする
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+#### 行ごとの意味と目的
+
+| 命令 | 書き方 | 意味 | 目的 |
+|------|--------|------|------|
+| `FROM` | `FROM nginx:alpine` | ベースにするイメージを指定 | ゼロから OS を組み立てず、動く nginx 付き土台から始める |
+| `COPY` | `COPY 元 先` | ビルド文脈（`.`）のファイルをイメージ内へコピー | 自分の `index.html` を Web の公開場所に置く |
+
+補足:
+
+| 項目 | 内容 |
+|------|------|
+| `nginx:alpine` | Alpine Linux 上の軽量 nginx。コンテナ内では通常 **80** 番で待ち受け |
+| `index.html`（左側） | `exercises/` にある自分のファイル（ビルド文脈からの相対パス） |
+| `/usr/share/nginx/html/index.html`（右側） | コンテナ内のパス。nginx 公式イメージが「ここに置いたファイルを返す」場所 |
+| コメント（`#`） | 人間向け。ビルドには影響しない |
+
+#### ビルドの流れ（イメージ）
+
+```text
+exercises/
+  Dockerfile      ← レシピ
+  index.html      ← コピーされる材料
+        │
+        │  docker build -t k8s-learn-web:1 .
+        ▼
+イメージ k8s-learn-web:1
+  = nginx:alpine の中身
+    + 差し替えた index.html
+        │
+        │  docker run -p 8081:80
+        ▼
+コンテナ（中の nginx が 80 で待ち受け）
+  ← ホストの 8081 からアクセス
+```
+
+#### `index.html` との関係
+
+[`exercises/index.html`](./exercises/index.html) は、返す Web ページ本体です。  
+Dockerfile の `COPY` がこれをイメージに焼き込みます。HTML を変えたら **再 `docker build`** しないとコンテナには反映されません。
+
+#### ビルドと起動
+
 ```bash
 cd 02-docker/exercises
 docker build -t k8s-learn-web:1 .
@@ -75,16 +132,9 @@ docker run --rm -p 8081:80 k8s-learn-web:1
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `cd 02-docker/exercises` | 作業ディレクトリ移動 | Dockerfile がある場所へ行く |
-| `docker build -t 名前:タグ .` | カレントの Dockerfile からイメージ作成 | `-t` で名前付け。`.` はビルド文脈（このフォルダ） |
+| `cd 02-docker/exercises` | 作業ディレクトリ移動 | Dockerfile と index.html がある場所へ行く（`.` の中身になる） |
+| `docker build -t 名前:タグ .` | Dockerfile に従ってイメージ作成 | `-t` で名前付け。`.` = ビルド文脈（このフォルダを材料にする） |
 | `docker run ... k8s-learn-web:1` | 作ったイメージを起動 | 公式イメージと同じ流れで自分製を動かす |
-
-`exercises/Dockerfile` の意味:
-
-| 行 | 意味 |
-|----|------|
-| `FROM nginx:alpine` | 土台イメージ |
-| `COPY index.html ...` | 自分の HTML を nginx の公開ディレクトリへコピー |
 
 ```bash
 curl http://localhost:8081
@@ -92,8 +142,23 @@ curl http://localhost:8081
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `curl`（`-I` なし） | レスポンス本体も取得 | 自分の `index.html` が返るか確認 |
+| `curl`（`-I` なし） | レスポンス本体も取得 | 「Welcome to nginx」ではなく、自分の `Hello from Docker` が返るか確認 |
 
+公式の `nginx:alpine` だけ動かしたとき（8080）との違い:
+
+| | 公式イメージそのまま | 自分で build したイメージ |
+|--|----------------------|---------------------------|
+| 中身 | nginx 既定の Welcome ページ | `exercises/index.html` |
+| 確認 | `curl -I` で 200 なら十分 | `curl` で HTML 本文を見る |
+
+#### よくある疑問
+
+| 疑問 | 答え |
+|------|------|
+| なぜ `FROM` が先？ | 土台が無いと `COPY` 先のファイルシステムがない。Dockerfile は通常 `FROM` から始める |
+| `RUN` は？ | パッケージインストール等で使う。この最小例では不要 |
+| `CMD` / `ENTRYPOINT` は？ | 「起動時に何を実行するか」。nginx イメージが既に持っているので省略している |
+| なぜ再 build が必要？ | `COPY` は **build 時** に焼き込む。起動中のコンテナのファイルを外から自動更新しない |
 ### 3. 一覧・タグ・レイヤ
 
 **この節の目的:** イメージの管理（名前・版・中身の積み重ね）を見る。現場の「どの版をデプロイしたか」問題の原型。
@@ -136,6 +201,7 @@ docker history k8s-learn-web:1
 
 - [ ] イメージとコンテナの違いを説明できる
 - [ ] `build` / `run` / `-p` / タグの目的を説明できる
+- [ ] Dockerfile の `FROM` と `COPY` の意味・目的を説明できる
 - [ ] 「なぜ自分でイメージを作るか」を一文で言える
 
 次: [03-kubernetes](../03-kubernetes/)
