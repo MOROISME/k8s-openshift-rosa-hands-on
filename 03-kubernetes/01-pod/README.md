@@ -3,13 +3,34 @@
 Pod は Kubernetes でコンテナを動かす**最小単位**です。  
 **この節の目的:** 「クラスタの上でコンテナが 1 個 Running になる」感覚と、観察コマンドを身につける。
 
-## ハンズオン
+## 前提
+
+先に [../README.md](../README.md) の **Minikube インストール〜 `kubectl get nodes` が Ready** まで完了していること。
 
 ```bash
+kubectl get nodes
+# minikube   Ready   ...
+```
+
+## ハンズオン
+
+**作業ディレクトリ:** 先に `03-kubernetes/01-pod` へ移動する（`02-docker/exercises` など別フォルダでは相対パスが解決しない）。
+
+```bash
+cd 03-kubernetes/01-pod
+# リポジトリ直下からの例:
+# cd /Users/あなた/study/k8s-openshift-rosa-hands-on/03-kubernetes/01-pod
+
 kubectl apply -f ../manifests/01-pod.yaml
 kubectl get pods
 kubectl describe pod hello-pod
 kubectl logs hello-pod
+```
+
+リポジトリのルートから打つ場合:
+
+```bash
+kubectl apply -f 03-kubernetes/manifests/01-pod.yaml
 ```
 
 | コマンド | 意味 | 目的 |
