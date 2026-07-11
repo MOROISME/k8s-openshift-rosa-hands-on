@@ -219,12 +219,13 @@ Minikube 公式: https://minikube.sigs.k8s.io/docs/start/
 
 ---
 
-## セットアップの完了条件（DoD）
+## セットアップの完了条件（DoD）＝ ハンズオン A
 
 - [ ] `docker version` で Server が見える
+- [ ] **自分で** `brew install minikube`（と必要なら kubectl）を実行した
 - [ ] `minikube version` / `kubectl version --client` が通る
-- [ ] `minikube start` 後、`kubectl get nodes` が Ready
-- [ ] `kubectl config current-context` が `minikube`
+- [ ] **自分で** `minikube start --driver=docker` した
+- [ ] `kubectl get nodes` が Ready、context が `minikube`
 
 これが揃ったら [01-pod](./01-pod/) へ。
 
