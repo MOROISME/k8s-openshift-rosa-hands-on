@@ -1,52 +1,71 @@
 # 01. Linux の基本
 
-Kubernetes も OpenShift も「Linux 上でコンテナを動かす」前提です。ここでは最低限のコマンドに慣れます。
+Kubernetes / OpenShift は Linux 上でコンテナを動かす前提です。  
+ここでは **パス操作 + 疎通確認** までを無料のローカル環境で身につけます。
 
-## 学ぶこと
+## 前提
 
-- カレントディレクトリ・パス
-- ファイルの閲覧・編集の感覚
-- プロセス・ポートの確認
-- 権限（root / sudo）の感覚
+- macOS ターミナル、または WSL / Linux（すべて無料）
+- 追加クラウド不要
 
 ## ハンズオン
 
-macOS のターミナル、または WSL / Linux で実行してください。
-
 ```bash
-# いまどこにいるか
 pwd
-
-# 中身を見る
 ls -la
 
-# テキストを作る・見る
 echo "hello k8s" > /tmp/k8s-learn.txt
 cat /tmp/k8s-learn.txt
+grep k8s /tmp/k8s-learn.txt
 
-# プロセスの一部を見る
 ps aux | head
-
-# 自分のユーザー
 whoami
 id
 ```
 
-### よく使うコマンド（覚える優先度高）
+### 疎通
+
+```bash
+curl -I https://example.com
+```
+
+任意（入っていれば）:
+
+```bash
+# dig example.com +short
+# nslookup example.com
+```
+
+### よく使うコマンド
 
 | コマンド | 用途 |
 |----------|------|
 | `pwd` / `cd` / `ls` | 移動・一覧 |
-| `cat` / `less` | ファイル確認 |
-| `grep` | 文字列検索 |
+| `cat` / `less` / `grep` | 確認・検索 |
 | `ps` / `top` | プロセス |
-| `curl` | HTTP 確認 |
-| `chmod` / `chown` | 権限（後で出てくる） |
+| `curl` | HTTP |
+| `dig` / `nslookup` | DNS |
+| `ss` / `lsof` | ポート |
 
-## チェックリスト
+## 期待結果
 
-- [ ] ターミナルで作業ディレクトリを移動できる
-- [ ] ファイルの中身を確認できる
-- [ ] 「コンテナは Linux 上のプロセスに近い」とイメージできる
+| 操作 | 成功の目安 |
+|------|------------|
+| `pwd` | `/Users/...` や `/home/...` などパスが表示される |
+| `cat /tmp/k8s-learn.txt` | `hello k8s` |
+| `curl -I https://example.com` | `HTTP/2 200` または `HTTP/1.1 200` など |
+
+## トラブル時
+
+| 症状 | 対処 |
+|------|------|
+| `curl: command not found` | macOS は通常あり。WSL なら `sudo apt update && sudo apt install -y curl` |
+| 社内プロキシで curl 失敗 | 別ネットワーク、または後続 Step で再試行 |
+
+## 完了条件（DoD）
+
+- [ ] ディレクトリ移動とファイル確認ができる
+- [ ] `curl` で HTTP 成否を確認できる
+- [ ] 「コンテナは Linux プロセスに近い」とイメージできる
 
 次: [02-docker](../02-docker/)

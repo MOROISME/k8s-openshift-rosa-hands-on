@@ -2,3 +2,6 @@
 *.log
 .idea/
 .vscode/
+# 個人の運用ログ（秘密を誤って書いてもコミットしにくくする）
+**/ops-log-local.md
+09-personal-ops/ops-log-local.md

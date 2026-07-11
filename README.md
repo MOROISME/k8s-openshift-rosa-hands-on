@@ -1,70 +1,79 @@
 # Kubernetes / OpenShift / ROSA ハンズオン学習
 
-Docker → Kubernetes → OpenShift → ROSA の順で、手を動かしながら学ぶためのリポジトリです。
+Docker → Kubernetes → OpenShift → ROSA の順で、**無料の範囲だけ**で手を動かし、最終的に **個人で検証環境を運用できる**状態を目指します。
 
-## 全体像
+## 無料枠ポリシー（必須）
 
-```mermaid
-flowchart TD
-    A[Docker / コンテナ] --> B[Kubernetes]
-    B --> C[OpenShift]
-    C --> D[ROSA<br/>Red Hat OpenShift Service on AWS]
-```
+このリポジトリの全手順は、次の範囲に限定しています。
 
-| 技術 | 一言でいうと |
-|------|----------------|
-| Docker | アプリをコンテナ化する技術 |
-| Kubernetes | コンテナを自動管理する仕組み |
-| OpenShift | Kubernetes を企業向けに強化したもの |
-| ROSA | AWS 上で使うマネージド OpenShift |
+| 使ってよいもの | 使ってはいけないもの |
+|----------------|----------------------|
+| ローカル PC / WSL | 有料クラウド VM の常用 |
+| Docker Desktop（個人利用）または Colima 等 | 課金前提のマネージド DB 等 |
+| Minikube | EKS / 有料 Kubernetes |
+| [Developer Sandbox](https://developers.redhat.com/developer-sandbox)（無料・期限あり） | **ROSA クラスタ作成**（有料） |
+| AWS Console の**閲覧**と IAM の学習（料金 $0 の操作のみ） | NAT Gateway / ALB / ROSA / 常時起動 EC2 |
+| 公式 Docs | 「試しに作る」有料リソース |
+
+詳細・禁止リスト・代替手段: [docs/free-tier.md](./docs/free-tier.md)
+
+> ROSA 実クラスタは無料では作れません。  
+> **OpenShift 操作は Sandbox、ROSA 固有知識は Docs + 責任分界演習**で代替し、個人運用は **Minikube + Sandbox** で回します。
+
+## 到達レベル
+
+| レベル | できること | 対応 Step |
+|--------|------------|-----------|
+| L1 | ローカルでデプロイ・基本操作 | 0–3 |
+| L2 | 壊して直す・Probe/RBAC の型 | 4 |
+| L3 | OpenShift 差分を Sandbox で一人で扱う | 5 |
+| L4 | 無料検証環境を週次で自分運用できる | 6–9 |
+
+ゴール（L4）: **Minikube + Developer Sandbox を自分の手で健全に回し、障害初動と週次点検を一人で実施できる。**  
+ROSA 本番相当の構築運用は対象外（有料のため）。知識としては説明・切り分けができるところまで。
 
 ## 推奨学習順
 
 ```mermaid
 flowchart TD
-    A[Linux の基本] --> B[Docker の基本]
-    B --> C[Kubernetes の基本]
-    C --> D[OpenShift の基本]
-    D --> E[ROSA の基本]
-    E --> F[現場の基盤運用理解]
+    A[Linux] --> B[Docker]
+    B --> C[K8s 基礎]
+    C --> D[K8s 運用]
+    D --> E[OpenShift Sandbox]
+    E --> F[AWS 無料観察]
+    F --> G[ROSA Docs]
+    G --> H[現場シナリオ]
+    H --> I[個人運用ランブック]
 ```
 
-| Step | 学習内容 | 使用環境 | ディレクトリ |
-|------|----------|----------|----------------|
-| 0 | 全体像・用語の整理 | この README | [00-overview](./00-overview/) |
-| 1 | Linux の基本 | ローカル / WSL | [01-linux](./01-linux/) |
-| 2 | Docker の基本 | Docker Desktop | [02-docker](./02-docker/) |
-| 3 | Kubernetes の基本 | Minikube | [03-kubernetes](./03-kubernetes/) |
-| 4 | OpenShift の基本 | Developer Sandbox | [04-openshift](./04-openshift/) |
-| 5 | ROSA の基本 | Docs +（任意）実クラスタ | [05-rosa](./05-rosa/) |
+| Step | 内容 | 環境（無料） | ディレクトリ |
+|------|------|--------------|----------------|
+| 0 | 全体像・到達像 | Docs | [00-overview](./00-overview/) |
+| 1 | Linux | ローカル / WSL | [01-linux](./01-linux/) |
+| 2 | Docker | Docker Desktop / Colima | [02-docker](./02-docker/) |
+| 3 | Kubernetes 基礎 | Minikube | [03-kubernetes](./03-kubernetes/) |
+| 4 | Kubernetes 運用 | Minikube | [04-kubernetes-ops](./04-kubernetes-ops/) |
+| 5 | OpenShift | Developer Sandbox | [05-openshift](./05-openshift/) |
+| 6 | AWS 基礎 | Console 閲覧のみ | [06-aws](./06-aws/) |
+| 7 | ROSA | Docs のみ（クラスタ作成禁止） | [07-rosa](./07-rosa/) |
+| 8 | 現場シナリオ | ノート + 無料環境 | [08-field-ops](./08-field-ops/) |
+| 9 | 個人運用（週次） | Minikube + Sandbox | [09-personal-ops](./09-personal-ops/) |
 
-## 自分の学習方針（このリポジトリの前提）
+目安: Step 0–5 で 1〜2 週間、6–8 で数日、9 は継続（週 30〜60 分）。
 
-1. **Kubernetes** … Minikube でローカルハンズオン
-2. **OpenShift** … Developer Sandbox で Web Console / `oc` を体験
-3. **ROSA** … OpenShift 理解のあと、AWS / Red Hat ドキュメントで構成を学ぶ
+## 各 Step の進め方
 
-```text
-Kubernetes
-  ↓
-OpenShift
-  ↓
-Red Hat OpenShift Documents
-  ↓
-AWS ROSA Documents
-```
+1. README の **前提** を満たす
+2. **ハンズオン** を上から実行する
+3. **期待結果** と自分の画面を照合する
+4. **完了条件（DoD）** を全部チェックしてから次へ
+5. うまくいかないときは **トラブル時** を見る
 
-## 使い方
-
-1. 上の Step を順番に進める
-2. 各ディレクトリの `README.md` を読む
-3. 「ハンズオン」節のコマンドを実行する
-4. 最後のチェックリストで理解を確認する
-
-概念の長い説明は [docs/concepts.md](./docs/concepts.md) にまとめています。
+概念の詳細: [docs/concepts.md](./docs/concepts.md)
 
 ## 参考リンク（公式）
 
 - [Kubernetes Tutorials（日本語）](https://kubernetes.io/ja/docs/tutorials/)
+- [Developer Sandbox](https://developers.redhat.com/developer-sandbox)
 - [Red Hat OpenShift on AWS Learn](https://www.redhat.com/en/technologies/cloud-computing/openshift/aws/learn)
-- [AWS ROSA](https://aws.amazon.com/jp/rosa/)
+- [AWS ROSA（Docs・製品説明）](https://aws.amazon.com/jp/rosa/)

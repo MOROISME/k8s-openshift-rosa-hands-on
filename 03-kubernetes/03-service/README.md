@@ -1,25 +1,22 @@
 # 03. Service
 
-Service は、入れ替わる Pod に対して**安定した名前とアクセス口**を提供します。
+Service は、入れ替わる Pod への**安定したアクセス口**です。
 
 ## ハンズオン
 
-前提: Deployment が残っていること（なければ `02-deployment` を再適用）。
+前提: Deployment があること（なければ再適用）。
 
 ```bash
 kubectl apply -f ../manifests/02-deployment.yaml
 kubectl apply -f ../manifests/03-service.yaml
 
 kubectl get svc hello-svc
-
-# Minikube で簡単にブラウザ/curl 用 URL を出す
 minikube service hello-svc --url
 ```
 
-別ターミナルで表示された URL に `curl` してみてください。
+表示された URL に:
 
 ```bash
-# 例
 curl "$(minikube service hello-svc --url)"
 ```
 
@@ -30,12 +27,25 @@ kubectl delete -f ../manifests/03-service.yaml
 kubectl delete -f ../manifests/02-deployment.yaml
 ```
 
+## 期待結果
+
+- `kubectl get svc` で `hello-svc` がある
+- `curl` が HTML（nginx 既定ページ等）を返す / 接続できる
+- `kubectl get endpoints hello-svc` で Pod IP が並ぶ
+
 ## ポイント
 
-- Pod IP は作り直すと変わる → Service がその差分を吸収する
-- `ClusterIP` / `NodePort` / `LoadBalancer` などの種類がある（ここでは NodePort 寄りに Minikube で見る）
+- Pod IP は作り直すと変わる → Service が吸収する
+- 種類: ClusterIP / NodePort / LoadBalancer など
 
-## チェックリスト
+## トラブル時
 
-- [ ] Service 経由でアプリに到達できた
+| 症状 | 対処 |
+|------|------|
+| curl 失敗 | Endpoints が空でないか。ラベル不一致を疑う |
+| URL が出ない | `kubectl get svc` と `minikube status` |
+
+## 完了条件（DoD）
+
+- [ ] Service 経由で到達できた
 - [ ] 「なぜ Service が必要か」を説明できる

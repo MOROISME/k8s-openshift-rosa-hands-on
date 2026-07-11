@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broken-pull
+  labels:
+    app: broken-pull
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: broken-pull
+  template:
+    metadata:
+      labels:
+        app: broken-pull
+    spec:
+      containers:
+        - name: web
+          # わざと存在しないイメージ
+          image: nginx:this-tag-does-not-exist-12345
+          ports:
+            - containerPort: 80

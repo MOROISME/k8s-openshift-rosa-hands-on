@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-miss-deploy
+  labels:
+    exercise: svc-miss
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svc-miss-pod
+  template:
+    metadata:
+      labels:
+        app: svc-miss-pod
+        exercise: svc-miss
+    spec:
+      containers:
+        - name: web
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-miss
+  labels:
+    exercise: svc-miss
+spec:
+  type: NodePort
+  selector:
+    # わざと Pod ラベルと不一致
+    app: wrong-label
+  ports:
+    - port: 80
+      targetPort: 80

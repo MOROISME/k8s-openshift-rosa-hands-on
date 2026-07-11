@@ -1,46 +1,37 @@
-# 03. Kubernetes の基本（Minikube ハンズオン）
+# 03. Kubernetes の基本（Minikube）
 
-## Kubernetes とは
-
-Linux サーバー上で、コンテナ化したアプリを複数サーバーにわたって自動管理する仕組み。  
-起動・停止・再起動・スケーリング・配置などを任せられる。
-
-| 用語 | 例え |
-|------|------|
-| コンテナ化したアプリ | 完成済みの料理キット |
-| サーバー | 店舗の厨房 |
-| Kubernetes | 店舗全体を管理する店長・エリアマネージャー |
-
-## この章で触る概念
-
-| 概念 | ざっくり意味 |
-|------|----------------|
-| Pod | コンテナを動かす最小単位 |
-| Deployment | Pod の望ましい台数・更新を管理 |
-| Service | Pod への安定したアクセス口 |
-| Namespace | クラスタ内の論理的な仕切り |
-| ConfigMap / Secret | 設定値・機密情報 |
-| Ingress | 外部 HTTP(S) 入り口（後で OpenShift では Route） |
-
-## 前提セットアップ
+## 前提（無料）
 
 ```bash
-# Minikube / kubectl が入っていること
 minikube version
 kubectl version --client
 
-# クラスタ起動（初回は時間がかかる）
 minikube start
-
-# 動作確認
 kubectl get nodes
 ```
 
-公式チュートリアル: https://kubernetes.io/ja/docs/tutorials/
+## 期待結果（セットアップ）
 
-## 学習の進め方
+```text
+kubectl get nodes
+NAME       STATUS   ROLES           AGE   VERSION
+minikube   Ready    control-plane   ...   v1....
+```
 
-順番に README を進めてください。
+`STATUS` が `Ready` なら次へ。
+
+## この章で触る概念
+
+| 概念 | 意味 |
+|------|------|
+| Pod | コンテナ実行の最小単位 |
+| Deployment | 台数・更新の管理 |
+| Service | 安定したアクセス口 |
+| Namespace | 論理仕切り |
+| ConfigMap / Secret | 設定・機密 |
+| Ingress | 外部 HTTP 入り口（OpenShift では Route） |
+
+## 学習順
 
 1. [01-pod](./01-pod/)
 2. [02-deployment](./02-deployment/)
@@ -48,12 +39,22 @@ kubectl get nodes
 4. [04-namespace-config](./04-namespace-config/)
 5. [05-ingress](./05-ingress/)（任意）
 
-マニフェストのまとめ: [manifests/](./manifests/)
+マニフェスト: [manifests/](./manifests/)
 
-## 章のゴール
+公式: https://kubernetes.io/ja/docs/tutorials/
+
+## トラブル時（セットアップ）
+
+| 症状 | 対処 |
+|------|------|
+| minikube start 失敗 | Docker が起動しているか確認。`minikube delete` 後に再 `start` |
+| kubectl が別クラスタを見ている | `kubectl config use-context minikube` |
+| メモリ不足 | 他アプリを閉じる。`minikube start --memory=3072` など調整 |
+
+## 完了条件（DoD）
 
 - [ ] Pod / Deployment / Service の関係を説明できる
-- [ ] `kubectl apply` / `get` / `describe` / `logs` / `delete` が使える
-- [ ] Minikube 上でサンプルアプリを公開できる
+- [ ] `apply` / `get` / `describe` / `logs` / `delete` が使える
+- [ ] Minikube 上でサンプルを公開できた（Service まで必須、Ingress は任意）
 
-次: [04-openshift](../04-openshift/)
+次: [04-kubernetes-ops](../04-kubernetes-ops/)

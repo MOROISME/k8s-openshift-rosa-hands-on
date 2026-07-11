@@ -1,13 +1,10 @@
 # 04. Namespace / ConfigMap / Secret
 
-## Namespace
+## 概要
 
-クラスタ内の論理的な仕切り。チームや環境（dev / stg）の分離に使う。
-
-## ConfigMap / Secret
-
+- Namespace … 論理的な仕切り
 - ConfigMap … 設定値（非機密寄り）
-- Secret … パスワード等（Base64。暗号化とは限らない点に注意）
+- Secret … 機密（Base64。暗号化とは限らない）
 
 ## ハンズオン
 
@@ -20,12 +17,21 @@ kubectl get pods -n learn
 
 kubectl logs -n learn deploy/hello-config
 kubectl describe pod -n learn -l app=hello-config
+```
 
-# 片付け
+片付け:
+
+```bash
 kubectl delete -f ../manifests/04-namespace-config.yaml
 ```
 
-## チェックリスト
+## 期待結果
 
-- [ ] `-n learn` で Namespace を指定して操作できる
-- [ ] ConfigMap の値が Pod に渡っていることを確認した
+- `learn` Namespace がある
+- Pod が `Running`
+- logs / describe で ConfigMap 由来の値が確認できる（マニフェスト設計どおり）
+
+## 完了条件（DoD）
+
+- [ ] `-n learn` で操作できる
+- [ ] ConfigMap が Pod に渡る流れを説明できる

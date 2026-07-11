@@ -1,19 +1,27 @@
 # 00. 全体像
 
+## このロードマップで目指すこと
+
+最終ゴール（L4）: **無料の検証環境（Minikube + Developer Sandbox）を、自分一人で週次運用できる。**
+
+途中ゴール:
+
+| レベル | 状態 |
+|--------|------|
+| L1 | ローカルでアプリをデプロイできる |
+| L2 | Pod 障害を切り分けて直せる |
+| L3 | Sandbox で Route 公開まで一人でできる |
+| L4 | 週次ランブックを自分で回せる |
+
+課金しない約束: [docs/free-tier.md](../docs/free-tier.md)
+
 ## 関係性（まずこれだけ覚える）
 
 ```text
-Docker
-  ↓  アプリをコンテナ化する技術
-
-Kubernetes
-  ↓  コンテナを複数サーバー上で管理する技術
-
-OpenShift
-  ↓  Kubernetes を企業向けに強化したプラットフォーム
-
-ROSA
-  ↓  AWS 上で使えるマネージド OpenShift
+Docker     → アプリをコンテナ化
+Kubernetes → コンテナを複数マシンで管理
+OpenShift  → 企業向けに強化した Kubernetes
+ROSA       → AWS 上のマネージド OpenShift（学習は Docs。作成はしない）
 ```
 
 ## 料理屋さんアナロジー
@@ -22,25 +30,25 @@ ROSA
 |------|------|
 | コンテナ化したアプリ | 完成済みの料理キット |
 | サーバー | 店舗の厨房 |
-| Kubernetes | 店舗全体を管理する店長・エリアマネージャー |
-| OpenShift | 大手チェーン店向けの本部システム付き運営パッケージ |
-| ROSA | その本部パッケージを AWS という土地で借りて運用する形態 |
+| Kubernetes | 店長・エリアマネージャー |
+| OpenShift | 本部システム付き運営パッケージ |
+| ROSA | そのパッケージを AWS の土地で借りる形態（有料） |
 
-## OpenShift の種類（ざっくり）
+## なぜこの順番か / なぜ無料環境だけで足りるか
 
-| 名前 | 意味 |
+| 順番 | 理由 |
 |------|------|
-| Red Hat OpenShift | OpenShift 製品群全体の総称 |
-| OpenShift Container Platform (OCP) | 自社 / クラウドに構築して使う代表的な OpenShift |
-| OpenShift Dedicated | Red Hat が管理する専用 OpenShift |
-| **ROSA** | AWS 上のマネージド OpenShift（現場で使うもの） |
-| ARO | Azure 上のマネージド OpenShift |
-| OpenShift Local | ローカル学習・開発用 |
-| Developer Sandbox | ブラウザで試せる学習用環境 |
+| Linux → Docker → K8s | 依存関係どおり |
+| K8s 運用 | 現場の初動はここで決まる |
+| OpenShift = Sandbox | 無料で Route / `oc` / Console を体験 |
+| AWS = 観察のみ | 有料リソースを作らず接点を理解 |
+| ROSA = Docs | 実クラスタは有料。責任分界を頭に入れる |
+| 個人運用 = Minikube+Sandbox | 「自分の基盤」を無料で持つ |
 
-## この Step のゴール
+## 完了条件（DoD）
 
-- [ ] Docker / K8s / OpenShift / ROSA の上下関係を説明できる
-- [ ] 「なぜ Minikube → Sandbox → ROSA Docs の順か」を説明できる
+- [ ] Docker / K8s / OpenShift / ROSA の上下関係を 1 分で説明できる
+- [ ] 「ROSA クラスタは作らない。代わりに Sandbox + Docs」と言える
+- [ ] 自分の到達目標（L1〜L4 のどこを目指すか）を一文で書ける
 
 次: [01-linux](../01-linux/)
