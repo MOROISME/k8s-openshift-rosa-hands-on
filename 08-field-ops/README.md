@@ -1,71 +1,83 @@
 # 08. 現場シナリオ（無料環境で演習）
 
-思考手順を固めます。実機は **Minikube** と（あれば）**Developer Sandbox** のみ。ROSA は作りません。
+**この Step の目的:** 障害を見たとき「最初の 15 分で何をするか」を自分の言葉で言えるようにする。  
+実機は Minikube / Sandbox のみ。ROSA は作らない。
 
 ## ゴール
 
-- [ ] 障害を 3 層（アプリ / OpenShift / AWS）で仮説立てできる
-- [ ] 最初の 15 分で見る順を言える
-- [ ] 「自分で追う / 渡す」判断ができる
+- [ ] 3 層（アプリ / OpenShift / AWS）で仮説立てできる
+- [ ] 最初に打つコマンドの**目的**を言える
+- [ ] 自分で追う / 渡す判断ができる
 
 ## 使い方
 
-1. シナリオを読む
-2. 何も見ずに手順を書く
-3. 模範と照合
-4. 可能なら無料環境で近い操作を行う
+1. シナリオを読む  
+2. 何も見ずに手順を書く（コマンド名だけでなく「何のため」も）  
+3. 模範と照合  
+4. 可能なら無料環境で近い操作  
 
 ---
 
 ## シナリオ 1: URL が 503 / タイムアウト
 
-### 無料での実機対応
+**目的:** 公開 URL 障害を「経路を辿る」型で切る。
 
-| 環境 | やること |
-|------|----------|
-| Minikube | Service selector を壊す → Endpoints 空を確認 → 直す（Step 4 C） |
-| Sandbox | Route → Service → Pod を Console / `oc` で辿る |
+| 環境 | やること | 目的 |
+|------|----------|------|
+| Minikube | Step 4 C（selector 壊し） | Endpoints 空＝経路切れを体感 |
+| Sandbox | Route → Service → Pod を辿る | OpenShift 公開経路の確認順を体に入れる |
 
-### 模範
+模範の見方:
 
-```text
-1. アプリ: Route/Ingress → Service → Endpoints → Pod Ready
-2. 基盤: Router / Ingress Controller、他アプリは生きているか
-3. AWS（概念）: LB / DNS / SG（実機作成はしない）
-```
+| 層 | 何をするか | 目的 |
+|----|------------|------|
+| アプリ | Route/Ingress → Service → Endpoints → Pod Ready | 自分たちの公開設定か |
+| 基盤 | Router 全体・他アプリ | クラスタ共通部品か |
+| AWS（概念） | LB / DNS | クラウド入口か（作成はしない） |
 
 ---
 
 ## シナリオ 2: CrashLoopBackOff
 
-無料実機: Step 4 シナリオ B を再実行。
+**目的:** 単一 Pod 障害の定石順を固定する。
 
 ```text
 describe → Events → logs (--previous) → 設定/イメージ/Probe/SCC
 ```
 
+| 手順 | 目的 |
+|------|------|
+| describe / Events | クラスタ側の診断メッセージ |
+| logs / `--previous` | 今・直前コンテナのアプリ出力（再起動後も理由を残す） |
+| Probe / SCC | 「アプリバグ」以外の落とし穴 |
+
+無料実機: Step 4 シナリオ B。
+
 ---
 
-## シナリオ 3: 複数 NS で ImagePullBackOff
+## シナリオ 3: 多数 NS で ImagePullBackOff
 
-無料実機: Step 4 シナリオ A。  
-「横断的ならレジストリ/権限/ネットワーク」は **Docs 上の仮説**として書く（ECR は作らない）。
+**目的:** 「1 アプリ」か「基盤・レジストリ横断」かを分ける。
+
+無料実機: Step 4 A。ECR は作らず仮説として書く。
 
 ---
 
 ## シナリオ 4: Forbidden
 
-無料実機: Step 4 の `kubectl auth can-i`、Sandbox の `oc auth can-i`。
+**目的:** 権限エラーを can-i で再現・切り分ける。
 
 ```text
 誰の資格情報か → can-i → RoleBinding →（OpenShift）SCC
 ```
 
+無料実機: Step 4 の `kubectl auth can-i`、Sandbox の `oc auth can-i`。
+
 ---
 
 ## シナリオ 5: API が重い / クラスタ異常
 
-無料実機の代替:
+**目的:** アプリ個別ではなく制御面の異常を疑う入口。
 
 ```bash
 # Minikube
@@ -76,7 +88,14 @@ kubectl get --raw='/readyz?verbose' 2>/dev/null || true
 oc get co 2>/dev/null || echo "co may be restricted on Sandbox"
 ```
 
-AWS リージョン障害は Status ページを**読むだけ**。
+| コマンド | 目的 |
+|----------|------|
+| `kubectl get nodes` | ノード NotReady がないか |
+| `kubectl get --raw='/readyz?verbose'` | API サーバ自身のヘルス（取れる環境のみ） |
+| `oc get co` | OpenShift クラスタ Operator の劣化確認 |
+| `2>/dev/null \|\| ...` | 権限・非対応環境でも学習を止めない |
+
+AWS Status は**読むだけ**。
 
 ---
 
@@ -93,8 +112,7 @@ AWS リージョン障害は Status ページを**読むだけ**。
 
 ## 完了条件（DoD）
 
-- [ ] 5 シナリオで「最初の 3 手」を言える
-- [ ] 3 層切り分けを 1 分で説明できる
+- [ ] 5 シナリオで「最初の 3 手」とその目的を言える
 - [ ] 有料リソースを作っていない
 
 次: [09-personal-ops](../09-personal-ops/)

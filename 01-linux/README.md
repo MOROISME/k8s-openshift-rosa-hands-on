@@ -218,6 +218,11 @@ curl -I https://example.com
 # nslookup example.com
 ```
 
+| 部分 | 意味 | 目的 |
+|------|------|------|
+| `dig example.com` | example.com の DNS 問い合わせ | 名前が IP に解決できるか確認（返る IP は example.com 側のアドレス。自分の PC ではない） |
+| `+short` | 詳細を省略して結果だけ表示 | 長い DNS 応答ではなく IP 等だけ見たいとき |
+
 `curl` 失敗時に、まず名前解決か通信かを分けるのが定石です。
 
 #### `ss` / `lsof`（ポート確認）

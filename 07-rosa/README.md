@@ -1,67 +1,64 @@
 # 07. ROSA の基本（Docs のみ・クラスタ作成禁止）
 
-## 重要（無料枠）
-
-**この Step では ROSA クラスタを作成しません。** 作成すると課金されます。
-
-| 学びたいこと | 無料でのやり方 |
-|--------------|----------------|
-| OpenShift 操作 | Step 5 Developer Sandbox（済） |
-| ROSA とは何か | 本 Step の Docs |
-| 責任分界 | 本 Step + Step 8 |
-| 実クラスタ操作 | 会社の非本番があれば**閲覧のみ**（任意） |
+**この Step の目的:** ROSA が何か・誰が何を責任持つかを説明できるようにする。  
+**クラスタは作らない（有料）。** OpenShift 操作は Step 5 で済み。
 
 ポリシー: [docs/free-tier.md](../docs/free-tier.md)
 
+| 学びたいこと | 無料でのやり方 | 目的 |
+|--------------|----------------|------|
+| OpenShift 操作 | Step 5 Sandbox | 手を動かす部分は済んでいる |
+| ROSA とは | 本 Step Docs | マネージドサービスの位置づけ |
+| 責任分界 | 本 Step + Step 8 | 障害時にどこを疑うか |
+| 実クラスタ | 会社非本番の閲覧のみ（任意） | 実物の雰囲気（破壊禁止） |
+
 ## ROSA とは
 
-**Red Hat OpenShift Service on AWS**。AWS 上のマネージド OpenShift。
+**Red Hat OpenShift Service on AWS** = AWS 上のマネージド OpenShift。
 
 ```text
 Kubernetes → OpenShift → ROSA（AWS 上マネージド）
 ```
 
-## 1. 責任分界（必須）
+## 1. 責任分界 — なぜ学ぶか
 
-| 層 | 見るもの（例） |
-|----|----------------|
-| アプリ | Pod、ログ、設定、イメージ、Route 応答 |
-| OpenShift / ROSA | `oc get co`、Operator、ノード、SCC |
-| AWS | VPC、IAM、LB、DNS、クォータ、リージョン障害 |
+障害対応で「自分で直す / ベンダーや基盤に渡す」判断の軸になる。
 
-- [ ] マネージド＝コントロールプレーン運用の多くを Red Hat / サービス側が担う、と説明できる
-- [ ] 顧客側に残る責任（アプリ、権限設計、ネットワーク接続など）を列挙できる
+| 層 | 見るもの（例） | 見る目的 |
+|----|----------------|----------|
+| アプリ | Pod、ログ、設定、Route 応答 | 自分たちのデプロイ起因か |
+| OpenShift / ROSA | `oc get co`、Operator、ノード、SCC | クラスタ基盤の劣化か |
+| AWS | VPC、IAM、LB、DNS | クラウド土台の問題か |
 
-## 2. Classic と HCP（Docs）
+## 2. Classic と HCP — なぜ区別するか
+
+現場のクラスタ種別で「何が見えるか・課金モデル」が違うため。
 
 | 種別 | ざっくり |
 |------|-----------|
-| ROSA Classic | 従来型 |
-| ROSA HCP | コントロールプレーンをホストする構成 |
+| Classic | 従来型 |
+| HCP | コントロールプレーンをホストする構成 |
 
-読む:
+読む目的: 公式の定義を自分の言葉に落とす（作成はしない）。
 
 - https://aws.amazon.com/jp/rosa/
 - https://docs.aws.amazon.com/rosa/latest/userguide/what-is-rosa.html
 - https://www.redhat.com/en/technologies/cloud-computing/openshift/aws/learn
 
-- [ ] 両者で「見え方・運用・課金」が違うことを一言で言える
-- [ ] **どちらもこの教材では作らない**
+## 3. Sandbox との対応 — なぜやるか
 
-## 3. Sandbox との対応づけ（無料の実践接続）
+「ROSA を作れなくても、触った OpenShift 操作が本番 ROSA でも同じ道具」と接続するため。
 
-Sandbox でやったことを ROSA 脳に翻訳する。
+| Sandbox | ROSA での意味 |
+|---------|----------------|
+| Project / Deploy / Route | アプリ層。同じ |
+| `oc` / Console | 接続先が ROSA になるだけ |
+| SCC | 本番でも（より）重要 |
+| Operator | `co` とセットで健全性 |
 
-| Sandbox で触ったこと | ROSA での位置づけ |
-|----------------------|-------------------|
-| Project / Deployment / Route | アプリ層。ROSA でも同様に触る |
-| `oc` / Console | 同じ道具。接続先クラスタが ROSA になる |
-| SCC / 権限の制限 | 本番でも同様。むしろ厳しい |
-| Operator の存在 | ROSA ではクラスタ健全性（`co`）とセットで見る |
+## 4. 任意: 会社クラスタ閲覧
 
-## 4. 任意: 会社クラスタの閲覧のみ
-
-権限がある場合のみ（無料だが破壊禁止）:
+**目的:** 実クラスタの見え方を知る。変更はしない。
 
 ```bash
 oc whoami
@@ -70,18 +67,19 @@ oc get co
 oc get route -A | head
 ```
 
-**delete / edit / スケール変更はしない。** 学習目的は観察。
+| コマンド | 意味 | 目的 |
+|----------|------|------|
+| `oc whoami` | 誰で入っているか | 権限・監査の起点 |
+| `oc get nodes` | ワーカー等の状態 | ノード障害の一次確認 |
+| `oc get co` | Cluster Operator 一覧 | クラスタ機能の健全性（ROSA/OCP 運用の定番） |
+| `oc get route -A \| head` | 全 NS の Route の先頭 | 公開面の全体感。`-A` は全 Namespace。`head` で出力抑制 |
 
-## 期待結果
-
-- 「ROSA = AWS 上マネージド OpenShift」を説明できる
-- Classic / HCP の違いを一言で言える
-- 3 層切り分けを説明できる
-- 請求が発生する操作をしていない
+**delete / edit / scale はしない。**
 
 ## 完了条件（DoD）
 
-- [ ] 上記「期待結果」を満たす
-- [ ] ROSA 作成ウィザードを完了していない（開始も非推奨）
+- [ ] ROSA と責任分界・Classic/HCP を説明できる
+- [ ] （任意コマンドを打った場合）各コマンドの目的を説明できる
+- [ ] クラスタを作っていない
 
 次: [08-field-ops](../08-field-ops/)
