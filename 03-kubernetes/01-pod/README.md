@@ -5,7 +5,7 @@ Pod は Kubernetes でコンテナを動かす**最小単位**です。
 
 ## 前提
 
-先に [../README.md](../README.md) の **Minikube インストール〜 `kubectl get nodes` が Ready** まで完了していること。
+先に [../README.md](../README.md) の **ハンズオン A（環境構築）** を自分のターミナルで完了し、`kubectl get nodes` が Ready であること。
 
 ```bash
 kubectl get nodes

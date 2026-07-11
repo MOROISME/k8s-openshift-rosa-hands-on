@@ -4,27 +4,30 @@
 
 費用: **すべて無料**（ローカルのみ。クラウドの有料 K8s は使わない）。
 
+> **進め方:** 下のハンズオンは **自分のターミナルで順番に実行**してください。  
+> インストール・クラスタ起動も学習の一部です（代理実行せず、手順どおりに実施する）。
+
 ---
 
-## 0. 全体の流れ（先にこれ）
+## ハンズオン A: 環境構築（インストール〜クラスタ起動）
+
+### A-0. 全体の流れ
 
 ```text
 1. Docker Desktop を入れる・起動する
 2. Homebrew で minikube / kubectl を入れる
 3. minikube start でクラスタを起動する
 4. kubectl get nodes で Ready を確認する
-5. 01-pod 以降のハンズオンへ進む
+5. ハンズオン B（01-pod 以降）へ進む
 ```
 
----
-
-## 1. 前提ソフト: Docker Desktop
+### A-1. Docker Desktop（前提）
 
 Minikube（docker ドライバ）は、裏で Docker を使います。
 
-1. [Docker Desktop](https://www.docker.com/products/docker-desktop/) をインストール（未導入なら）
+1. 未導入なら [Docker Desktop](https://www.docker.com/products/docker-desktop/) をインストール
 2. Docker Desktop を起動し、メニューバーのアイコンが安定するまで待つ
-3. 確認:
+3. ターミナルで確認:
 
 ```bash
 docker version
@@ -34,11 +37,9 @@ docker version
 |----------|------|------|
 | `docker version` | Client / Server 表示 | **Server が出ること**＝エンジン起動済み。Client だけのエラーなら Desktop 未起動 |
 
----
+- [ ] `Client:` と `Server:` の両方表示された
 
-## 2. Minikube / kubectl のインストール（macOS）
-
-### 2-1. Homebrew があるか確認
+### A-2. Homebrew の確認
 
 ```bash
 brew --version
@@ -46,18 +47,22 @@ brew --version
 
 | 結果 | 次にすること |
 |------|----------------|
-| 版が出る | 次の「インストール」へ |
-| `command not found` | 先に [Homebrew](https://brew.sh/) を入れる（公式の install スクリプト） |
+| 版が出る | A-3 へ |
+| `command not found` | 先に [Homebrew](https://brew.sh/) を入れる |
 
-Homebrew 新規インストール例（公式サイトのコマンドを使う）:
+Homebrew が無い場合の公式インストール例:
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-インストール後、画面の指示どおり `PATH` を通す（Apple Silicon では `/opt/homebrew/bin` を PATH に追加、など）。
+終わったら画面の指示どおり `PATH` を通し、**新しいターミナル**で `brew --version` を再確認。
 
-### 2-2. minikube と kubectl を入れる
+- [ ] `brew --version` が通る
+
+### A-3. minikube / kubectl のインストール
+
+**ここを自分で実行する（ハンズオン本体）。**
 
 ```bash
 brew install minikube
@@ -69,9 +74,9 @@ brew install kubectl
 | `brew install minikube` | ローカル K8s ツールを入れる | 学習用クラスタを作・消できる |
 | `brew install kubectl` | Kubernetes 操作クライアントを入れる | Pod 等を apply / get する |
 
-`brew install minikube` のときに依存で `kubernetes-cli`（kubectl）が入ることもあります。その場合は `kubectl version --client` が通れば `brew install kubectl` は省略可。
+`brew install minikube` の依存で `kubernetes-cli`（kubectl）が入ることがあります。その場合は次の確認で `kubectl` が通れば、`brew install kubectl` は省略してよい。
 
-### 2-3. インストールできたか確認
+確認:
 
 ```bash
 which minikube
@@ -82,19 +87,17 @@ kubectl version --client
 
 | コマンド | 成功の目安 | 目的 |
 |----------|------------|------|
-| `which minikube` | `/opt/homebrew/bin/minikube` などパスが出る | コマンドが PATH にいる |
+| `which minikube` | `/opt/homebrew/bin/minikube` など | PATH に載っている |
 | `which kubectl` | パスが出る | 同上 |
 | `minikube version` | `minikube version: v1....` | 実行できる |
 | `kubectl version --client` | `Client Version: v1....` | クラスタ無しでもクライアント確認可 |
 
-`command not found` のとき:
+`command not found` のとき: ターミナルを開き直す。`echo $PATH` に `/opt/homebrew/bin` があるか確認。
 
-- 新しいターミナルを開き直す
-- `echo $PATH` に `/opt/homebrew/bin`（または Homebrew が表示したパス）があるか確認
+- [ ] `minikube version` が通る
+- [ ] `kubectl version --client` が通る
 
----
-
-## 3. クラスタ起動
+### A-4. クラスタ起動
 
 ```bash
 minikube start --driver=docker
@@ -102,13 +105,13 @@ minikube start --driver=docker
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `minikube start` | ローカルに K8s を 1 クラスタ作って起動 | ハンズオン用の「小さな本番に似た環境」 |
-| `--driver=docker` | Docker Desktop 上で動かす | この教材の推奨（明示すると迷いが減る） |
+| `minikube start` | ローカルに K8s を 1 クラスタ作って起動 | ハンズオン用環境を用意する |
+| `--driver=docker` | Docker Desktop 上で動かす | この教材の推奨 |
 
-初回はベースイメージのダウンロードで数分かかることがあります。  
-成功すると `Done! kubectl is now configured to use "minikube"` の趣旨のメッセージが出ます。
+初回はベースイメージのダウンロードで **数分**かかることがあります。  
+`Done! kubectl is now configured to use "minikube"` の趣旨が出れば起動成功。
 
-状態確認:
+続けて確認:
 
 ```bash
 minikube status
@@ -118,11 +121,11 @@ kubectl config current-context
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `minikube status` | host / kubelet 等の状態 | Minikube 自体が Running か |
+| `minikube status` | host / kubelet 等 | Minikube が Running か |
 | `kubectl get nodes` | ノード一覧 | K8s として Ready か |
-| `kubectl config current-context` | 今操作しているクラスタ名 | `minikube` になっているか確認 |
+| `kubectl config current-context` | 操作中クラスタ名 | `minikube` か確認 |
 
-### 期待結果
+期待結果:
 
 ```text
 kubectl get nodes
@@ -130,32 +133,30 @@ NAME       STATUS   ROLES           AGE   VERSION
 minikube   Ready    control-plane   ...   v1....
 ```
 
-`STATUS` が **Ready** ならセットアップ完了 → [01-pod](./01-pod/) へ。
-
 `current-context` が `minikube` でない場合:
 
 ```bash
 kubectl config use-context minikube
 ```
 
-| コマンド | 目的 |
-|----------|------|
-| `kubectl config use-context minikube` | kubectl の操作先を Minikube に切り替える |
+- [ ] `minikube status` が Running 系
+- [ ] `kubectl get nodes` が **Ready**
+- [ ] context が `minikube`
 
----
+**ここまでできたら** → [01-pod](./01-pod/) へ（ハンズオン B）。
 
-## 4. よく使う日常コマンド（起動・停止）
+### A-5. 日常の起動・停止（参考）
 
 | やりたいこと | コマンド | 目的 |
 |--------------|----------|------|
 | 起動 | `minikube start` | 学習再開 |
-| 状態 | `minikube status` | 動いているか確認 |
-| 停止（残す） | `minikube stop` | PC リソースを空けつつクラスタ定義は残す |
-| 削除（作り直し） | `minikube delete` | 壊れたとき・綺麗に最初から |
+| 状態 | `minikube status` | 確認 |
+| 停止（残す） | `minikube stop` | リソースを空けつつ定義は残す |
+| 削除（作り直し） | `minikube delete` | 壊れたとき・最初から |
 
 ---
 
-## 5. kubectl でこれから何度も使う型
+## kubectl でこれから何度も使う型
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
@@ -188,9 +189,9 @@ kubectl apply -f ../manifests/01-pod.yaml
 | ConfigMap / Secret | 設定・機密 | イメージに焼き込まない設定 |
 | Ingress | 外部 HTTP 入り口 | OpenShift では Route に相当 |
 
-## 学習順
+## 学習順（ハンズオン B）
 
-セットアップ（上記 1〜3）が終わってから:
+**ハンズオン A（環境構築）が終わってから:**
 
 1. [01-pod](./01-pod/) … 1 個動かす
 2. [02-deployment](./02-deployment/) … 台数管理
