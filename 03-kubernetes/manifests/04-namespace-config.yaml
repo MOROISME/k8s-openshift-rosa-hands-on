@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: learn
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-config
+  namespace: learn
+data:
+  APP_MESSAGE: "hello from ConfigMap"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hello-secret
+  namespace: learn
+type: Opaque
+stringData:
+  APP_PASSWORD: "changeme"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-config
+  namespace: learn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-config
+  template:
+    metadata:
+      labels:
+        app: hello-config
+    spec:
+      containers:
+        - name: demo
+          image: busybox:1.36
+          command: ["sh", "-c", "echo MESSAGE=$APP_MESSAGE; echo SECRET_SET=$( [ -n \"$APP_PASSWORD\" ] && echo yes || echo no); sleep 3600"]
+          env:
+            - name: APP_MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: hello-config
+                  key: APP_MESSAGE
+            - name: APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hello-secret
+                  key: APP_PASSWORD
