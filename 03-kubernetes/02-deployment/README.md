@@ -3,6 +3,46 @@
 Deployment は「何台動かすか」「更新どうするか」を管理します。  
 **この節の目的:** Pod を直接ではなく Deployment 経由で扱い、スケールを体験する。
 
+## マニフェスト解説（`../manifests/02-deployment.yaml`）
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+        - name: web
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+```
+
+| フィールド | 意味 | 目的 |
+|------------|------|------|
+| `kind: Deployment` | Deployment を作る | Pod を直接ではなく管理者経由で動かす |
+| `replicas: 2` | 希望台数 | 「同じ Pod を 2 つ」と宣言 |
+| `selector.matchLabels` | Deployment が管理する Pod の条件 | `app=hello` の Pod を自分の管轄にする |
+| `template.metadata.labels` | 作られる Pod に付くラベル | **selector と同じ eng_echoが必要**（ここが実体の印） |
+| `template.spec.containers` | Pod の中身の設計図 | 実際に起動するコンテナ定義 |
+
+関係のイメージ:
+
+```text
+Deployment (hello-deploy)
+  replicas: 2
+  └── template（設計図）→ Pod × 2（どちらも labels: app=hello）
+```
+
 ## ハンズオン
 
 ```bash

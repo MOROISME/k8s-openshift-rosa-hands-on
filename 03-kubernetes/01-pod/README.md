@@ -12,6 +12,36 @@ kubectl get nodes
 # minikube   Ready   ...
 ```
 
+## マニフェスト解説（`../manifests/01-pod.yaml`）
+
+`kubectl apply -f` で渡す YAML は、「こういう Pod が欲しい」という**宣言書**です。
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-pod
+  labels:
+    app: hello
+spec:
+  containers:
+    - name: web
+      image: nginx:alpine
+      ports:
+        - containerPort: 80
+```
+
+| フィールド | 意味 | 目的 |
+|------------|------|------|
+| `apiVersion` | API の版 | どのルールで解釈するか |
+| `kind: Pod` | 作るものの種類 | ここでは Pod |
+| `metadata.name` | 名前 | `kubectl get pod hello-pod` で指定する名前 |
+| `metadata.labels` | 付箋（app=hello） | 後で Service などが探すための印 |
+| `spec.containers` | 中で動かすコンテナ一覧 | Pod は 1 つ以上のコンテナを持てる |
+| `containers[].name` | コンテナ名 | Pod 内での識別 |
+| `containers[].image` | 使うイメージ | Docker のときと同じ `nginx:alpine` |
+| `containerPort: 80` | コンテナが聞くポートの申告 | 情報・ドキュメント用（公開そのものではない） |
+
 ## ハンズオン
 
 **作業ディレクトリ:** 先に `03-kubernetes/01-pod` へ移動する（`02-docker/exercises` など別フォルダでは相対パスが解決しない）。

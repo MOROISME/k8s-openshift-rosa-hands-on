@@ -45,6 +45,91 @@ oc project
 
 **目的:** 制限付き SCC でも動く非特権アプリを、Deployment → Service → Route で公開する。
 
+### マニフェスト解説
+
+#### 1) Deployment（`manifests/app-deployment.yaml`）
+
+```yaml
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: web
+      # OpenShift 制限付き SCC 向け（特権ポートを使わない）
+      image: nginxinc/nginx-unprivileged:1.25-alpine
+      ports:
+        - containerPort: 8080
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+        runAsNonRoot: true
+```
+
+| フィールド | 意味 | 目的 |
+|------------|------|------|
+| `nginx-unprivileged` | root 以外で 8080 を聞く nginx | OpenShift の制限付き SCC でも動きやすい |
+| `containerPort: 8080` | 特権ポート（80）を避ける | 非特権ユーザーでも listen できる |
+| `runAsNonRoot` | root で動かさない | SCC / セキュリティ要件に合わせる |
+| `capabilities.drop: ALL` | Linux capability を捨てる | 余計な権限を持たせない |
+| Probe / resources | 健康診断と枠 | Minikube 演習と同じ型 |
+
+#### 2) Service（`manifests/app-service.yaml`）
+
+```yaml
+kind: Service
+spec:
+  selector:
+    app: sandbox-web
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+```
+
+| フィールド | 意味 | 目的 |
+|------------|------|------|
+| `selector.app` | Pod のラベル条件 | Deployment が付ける `app: sandbox-web` と一致 |
+| `port` / `targetPort` | 窓口 → コンテナ | どちらも 8080（非特権） |
+| `ports[].name: http` | ポート名 | Route から `targetPort: http` で参照する |
+
+#### 3) Route（`manifests/app-route.yaml`）
+
+```yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+spec:
+  to:
+    kind: Service
+    name: sandbox-web
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+```
+
+| フィールド | 意味 | 目的 |
+|------------|------|------|
+| `kind: Route` | OpenShift の外部入り口 | Ingress に近い役割 |
+| `to.name` | 届け先 Service | `sandbox-web` に転送 |
+| `port.targetPort: http` | Service のポート名 | 上の Service の `name: http` と対応 |
+| `tls.termination: edge` | 入口で TLS 終端 | HTTPS で受けて中は HTTP |
+| `Redirect` | HTTP → HTTPS | 平文アクセスをリダイレクト |
+
+流れ:
+
+```text
+ブラウザ / curl
+  → Route（HTTPS）
+    → Service (sandbox-web:8080)
+      → Pod（nginx-unprivileged）
+```
+
+### 適用手順
+
 ```bash
 oc project
 
@@ -152,6 +237,7 @@ oc get csv -A 2>/dev/null || true
 ## 完了条件（DoD）
 
 - [ ] アプリを 1 つ動かして Route で到達した
+- [ ] Deployment / Service / Route の YAML の役割を説明できる
 - [ ] 主要 `oc` コマンドの目的を説明できる
 - [ ] 有料クラスタを作っていない
 

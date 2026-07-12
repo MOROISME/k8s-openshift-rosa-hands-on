@@ -121,16 +121,34 @@ Service は **ラベル** で対象を選びます（電話帳の条件検索に
 両方の `app: hello` が一致しているので、Service は「hello の Pod」に届けます。  
 ここがずれると、窓口はあるのに後ろに誰もいない（Endpoints が空）になります。
 
-### ポートの数字（ざっくり）
-
-マニフェスト例（`03-service.yaml`）:
+### マニフェスト解説（`../manifests/03-service.yaml`）
 
 ```yaml
-ports:
-  - port: 80          # Service の受付ポート
-    targetPort: 80    # 実際の Pod（コンテナ）側のポート
-    nodePort: 30080   # （NodePort のとき）外からノード経由で触るポート
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-svc
+spec:
+  selector:
+    app: hello
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
 ```
+
+| フィールド | 意味 | 目的 |
+|------------|------|------|
+| `kind: Service` | Service を作る | 固定の受付窓口 |
+| `metadata.name` | 窓口の名前 | `hello-svc` で参照する |
+| `selector.app: hello` | 届け先 Pod の条件 | **Pod の labels** と一致させる（Deployment 本体ではなく Pod） |
+| `type: NodePort` | 公開の種類 | 学習用に外から届きやすくする |
+| `port` | Service の受付ポート | 窓口の番号 |
+| `targetPort` | Pod（コンテナ）側ポート | 奥の nginx が聞いている番号 |
+| `nodePort` | ノード側のポート | Minikube 等から入るときの番号（環境によりトンネル経由になる） |
+
+ポートの噛み砕き:
 
 | 名前 | 噛み砕くと |
 |------|------------|
@@ -164,7 +182,6 @@ cd 03-kubernetes/03-service
 kubectl apply -f ../manifests/02-deployment.yaml
 kubectl apply -f ../manifests/03-service.yaml
 
-```bash
 kubectl get svc hello-svc
 ```
 
@@ -262,6 +279,7 @@ kubectl delete -f ../manifests/02-deployment.yaml
 ## 完了条件（DoD）
 
 - [ ] Service を「入れ替わる Pod への固定窓口」と説明できる
+- [ ] YAML の `selector` / `port` / `targetPort` の意味を説明できる
 - [ ] Service の中に Pod が入っているのではなく、ラベルで探してつなぐ、と言える
 - [ ] Deployment / Service / Endpoints / Pod の役割の違いを言える
 - [ ] なぜ Pod IP 直打ちがまずいか言える

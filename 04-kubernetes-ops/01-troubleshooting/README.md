@@ -16,6 +16,35 @@
 
 **目的:** 「イメージが取れない」障害の見た目と直し方を覚える。
 
+### マニフェスト解説
+
+**壊れた版**（`../manifests/broken-imagepull.yaml`）:
+
+```yaml
+containers:
+  - name: web
+    # わざと存在しないイメージ
+    image: nginx:this-tag-does-not-exist-12345
+```
+
+| フィールド | 意味 | 目的（この演習） |
+|------------|------|------------------|
+| `image: ...does-not-exist...` | 存在しないタグ | pull 失敗 → `ImagePullBackOff` を意図的に起こす |
+
+**直した版**（`../manifests/fixed-imagepull.yaml`）:
+
+```yaml
+image: nginx:alpine
+```
+
+| 差分 | 意味 | 目的 |
+|------|------|------|
+| 正しいイメージ名 | レジストリから取れる | Running に戻す |
+
+現場でも「YAML の `image` が間違っていないか」は最初に疑うポイントです。
+
+### ハンズオン
+
 ```bash
 kubectl apply -f ../manifests/broken-imagepull.yaml
 kubectl get pods -l app=broken-pull
@@ -56,6 +85,37 @@ kubectl delete -f ../manifests/fixed-imagepull.yaml
 
 **目的:** 「起動してもすぐ落ちる」障害をログで特定する。
 
+### マニフェスト解説
+
+**壊れた版**（`../manifests/broken-crashloop.yaml`）:
+
+```yaml
+containers:
+  - name: boom
+    image: busybox:1.36
+    # わざとすぐ終了する
+    command: ["sh", "-c", "echo boom: intentional crash; exit 1"]
+```
+
+| フィールド | 意味 | 目的（この演習） |
+|------------|------|------------------|
+| `command` | コンテナ起動時のコマンド | イメージ自体は正しい |
+| `exit 1` | 異常終了 | すぐ落ちて `CrashLoopBackOff` になる |
+
+**直した版**（`../manifests/fixed-crashloop.yaml`）:
+
+```yaml
+command: ["sh", "-c", "echo ok: staying up; sleep 3600"]
+```
+
+| 差分 | 意味 | 目的 |
+|------|------|------|
+| `sleep 3600` | 落ちずに居座る | Running を維持する |
+
+イメージ pull は成功するのに CrashLoop なら、**ログ（アプリの落ち方）** を見ます。
+
+### ハンズオン
+
 ```bash
 kubectl apply -f ../manifests/broken-crashloop.yaml
 kubectl get pods -l app=broken-crash
@@ -88,6 +148,44 @@ kubectl delete -f ../manifests/fixed-crashloop.yaml
 ## シナリオ C: Service に届かない
 
 **目的:** Pod は生きているのに届かない＝経路（ラベル）問題を Endpoints で見抜く。
+
+### マニフェスト解説
+
+1 ファイルに Deployment + Service（`---` 区切り）。
+
+**壊れた版**（`../manifests/broken-service.yaml`）の要点:
+
+```yaml
+# Pod 側
+template:
+  metadata:
+    labels:
+      app: svc-miss-pod
+
+# Service 側（わざと不一致）
+spec:
+  selector:
+    app: wrong-label
+```
+
+| フィールド | 意味 | 目的（この演習） |
+|------------|------|------------------|
+| Pod の `labels.app` | 実体の付箋 | `svc-miss-pod` |
+| Service の `selector` | 探す条件 | `wrong-label` → 誰にもヒットしない |
+| 結果 | Endpoints が空 | 窓口はあるが後ろに誰もいない |
+
+**直した版**（`../manifests/fixed-service.yaml`）:
+
+```yaml
+selector:
+  app: svc-miss-pod
+```
+
+| 差分 | 意味 | 目的 |
+|------|------|------|
+| selector を Pod ラベルに合わせる | 名簿に載る | curl が届く |
+
+### ハンズオン
 
 ```bash
 kubectl apply -f ../manifests/broken-service.yaml
@@ -123,4 +221,5 @@ kubectl delete -f ../manifests/broken-service.yaml --ignore-not-found
 ## 完了条件（DoD）
 
 - [ ] 3 シナリオとも「壊れた状態」を観察してから直した
+- [ ] 各シナリオで「YAML のどこが原因か」を説明できる
 - [ ] 各コマンドを打つ目的を説明できる
