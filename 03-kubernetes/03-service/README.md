@@ -47,6 +47,66 @@ Deployment で動いている Pod には、それぞれ一時的な IP があり
 店員（Pod）が交代しても、代表電話（Service）は同じ。  
 電話をかければ、今いる店員につながる、というイメージです。
 
+### Service と Pod の関係（いちばん大事）
+
+よくある誤解: 「Service の中に Pod が入っている」  
+**実際:** Service と Pod は別物。Service は **ラベル条件で Pod を探してつなぐだけ**。
+
+```text
+【作る側】
+Deployment
+  └── Pod を作る・壊れたら作り直す（実体の管理者）
+        labels: app=hello
+
+【つなぐ側】
+Service (hello-svc)
+  └── selector: app=hello  ← 「app=hello の Pod を探せ」
+        │
+        ▼ 自動で名簿を更新
+      Endpoints = 今ヒットしている Pod の IP 一覧
+        │
+        ▼ トラフィックを転送
+      Pod A / Pod B のコンテナ（例: 80 番の nginx）
+```
+
+あなたの curl の流れ（今回）:
+
+```text
+curl（Mac）
+  → minikube のトンネル
+    → Service（受付窓口）
+      → Endpoints に載っているどれか 1 つの Pod
+        → その中の nginx
+```
+
+| 役割 | 誰がやるか | 一言 |
+|------|------------|------|
+| Pod を増やす・直す | **Deployment** | 実体を管理 |
+| 外から安定して届ける | **Service** | 窓口・振り分け |
+| 今どの Pod に届くか | **Endpoints** | 名簿（自動更新） |
+
+つまり関係は親子ではなく、
+
+- Deployment → Pod を **産む**
+- Service → ラベルで Pod を **見つける・届ける**
+
+です。Pod が 0 個なら Service はあっても応答できません（窓口だけあって店員がいない状態）。
+
+#### 自分の目で関係を確認する
+
+```bash
+# Pod（実体）とラベル
+kubectl get pods -l app=hello --show-labels
+
+# Service（窓口）の selector
+kubectl get svc hello-svc -o yaml | grep -A2 selector
+
+# 名簿（Service → 今の Pod IP）
+kubectl get endpoints hello-svc
+```
+
+ここがつながっていれば、「Service 経由で curl できる」理由が腹落ちします。
+
 ### どうやって「どの Pod？」を決めるか
 
 Service は **ラベル** で対象を選びます（電話帳の条件検索に近い）。
@@ -202,6 +262,8 @@ kubectl delete -f ../manifests/02-deployment.yaml
 ## 完了条件（DoD）
 
 - [ ] Service を「入れ替わる Pod への固定窓口」と説明できる
+- [ ] Service の中に Pod が入っているのではなく、ラベルで探してつなぐ、と言える
+- [ ] Deployment / Service / Endpoints / Pod の役割の違いを言える
 - [ ] なぜ Pod IP 直打ちがまずいか言える
 - [ ] Service 経由で curl できた
 - [ ] Endpoints を見る目的を説明できる
