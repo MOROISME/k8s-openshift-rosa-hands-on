@@ -104,24 +104,59 @@ cd 03-kubernetes/03-service
 kubectl apply -f ../manifests/02-deployment.yaml
 kubectl apply -f ../manifests/03-service.yaml
 
+```bash
 kubectl get svc hello-svc
-minikube service hello-svc --url
 ```
 
-| コマンド | 意味 | 目的 |
-|----------|------|------|
-| `apply` Deployment | アプリ（Pod 群）を用意 | Service の後ろに実体を置く |
-| `apply` Service | 固定窓口を作る | Pod が入れ替わっても同じ入口で届くようにする |
-| `kubectl get svc` | Service 一覧 | 窓口ができたか確認 |
-| `minikube service NAME --url` | Minikube 用のアクセス URL | ローカルから叩く住所を知る（Minikube 専用の便利コマンド） |
+### macOS + Docker ドライバでのアクセス（正しい挙動）
+
+次のメッセージが出ることがあります。**エラーではなく想定動作**です。
+
+```text
+❗  Because you are using a Docker driver on darwin, the terminal needs to be open to run it.
+```
+
+意味: Minikube が Mac 上に **トンネル（橋渡し）** を張っている。  
+そのトンネルは、`minikube service` を動かしている **ターミナルを開いたまま** でないと維持されない。
+
+だから **1 本のコマンドにまとめると失敗しやすい**です。
 
 ```bash
+# NG になりやすい（同じシェルで閉じる／待たされる）
 curl "$(minikube service hello-svc --url)"
 ```
 
+#### 正しいやり方（ターミナルを 2 つ）
+
+**ターミナル A**（開いたまま待つ）:
+
+```bash
+minikube service hello-svc --url
+```
+
+表示例:
+
+```text
+http://127.0.0.1:49982
+❗  Because you are using a Docker driver on darwin, the terminal needs to be open to run it.
+```
+
+→ URL（例: `http://127.0.0.1:49982`）を控える。**このターミナルは閉じない / Ctrl+C しない。**
+
+**ターミナル B**（別窓）:
+
+```bash
+curl http://127.0.0.1:49982
+# ポート番号はターミナル A に出たものに合わせる
+```
+
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `curl "$(...)"` | 表示 URL に HTTP アクセス | **Service 経由**でアプリに届くことを確認 |
+| `kubectl get svc` | Service 一覧 | 窓口ができたか確認 |
+| `minikube service NAME --url`（ターミナル A） | URL 表示 + トンネル維持 | Mac からクラスタ内 Service へ届く道を開く |
+| `curl URL`（ターミナル B） | HTTP アクセス | **Service 経由**でアプリに届くことを確認 |
+
+終わったらターミナル A で `Ctrl+C` してトンネルを閉じる。
 
 任意（とても大事）:
 
@@ -159,7 +194,9 @@ kubectl delete -f ../manifests/02-deployment.yaml
 
 | 症状 | よくある原因 | 対処 |
 |------|--------------|------|
-| curl 失敗 | Endpoints が空（ラベル不一致） | `kubectl get endpoints` / Pod の label と Service の selector を照合 |
+| `terminal needs to be open to run it` | macOS + Docker ドライバの正常メッセージ | ターミナル A で `minikube service --url` を開いたまま、B で curl |
+| curl が返らない / 固まる | トンネル用ターミナルを閉じた、または 1 コマンドにまとめた | 上記の 2 ターミナル手順にする |
+| curl 失敗（接続拒否） | Endpoints が空（ラベル不一致） | `kubectl get endpoints` / label と selector を照合 |
 | URL が出ない | Service 未作成 / Minikube 未起動 | `kubectl get svc` / `minikube status` |
 
 ## 完了条件（DoD）
