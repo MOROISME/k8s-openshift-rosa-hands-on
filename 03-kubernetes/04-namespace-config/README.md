@@ -143,6 +143,15 @@ SECRET_SET=yes
 
 **作業ディレクトリ:** `03-kubernetes/04-namespace-config`
 
+この演習で確認したいのは次の **3 段**です（手順の途中でも何度でも読み返す）:
+
+1. **ConfigMap → 環境変数 `APP_MESSAGE` にコピー**  
+   YAML の `env` / `configMapKeyRef` が、保管庫の値を Pod 起動時に環境変数へ入れる。
+2. **`echo MESSAGE=$APP_MESSAGE` で印刷**  
+   コンテナの `command` が、その環境変数を標準出力に書き出す。
+3. **その印刷が標準出力＝ログになる**  
+   `kubectl logs` で読む。ログ専用の別ファイルではなく、echo の出力そのもの。
+
 ```bash
 kubectl apply -f ../manifests/04-namespace-config.yaml
 
@@ -150,23 +159,30 @@ kubectl get ns learn
 kubectl get configmap,secret -n learn
 kubectl get pods -n learn
 
-# ① の保管庫の中身（設定そのもの）
+# --- 段1の「保管庫」側（まだ Pod の中ではない）---
 kubectl get configmap hello-config -n learn -o yaml
+# data.APP_MESSAGE: hello from ConfigMap が見えれば OK
 
-# ④⑤ Pod が echo した内容（「渡った結果」）
+# --- 段2〜3の結果（Pod が echo した標準出力＝ログ）---
+# apply 後、Pod 内ではすでに次が実行済み:
+#   ConfigMap → 環境変数 APP_MESSAGE にコピー
+#   echo MESSAGE=$APP_MESSAGE で印刷
+#   その印刷が標準出力＝ログになる
 kubectl logs -n learn deploy/hello-config
+# 期待: MESSAGE=hello from ConfigMap
+#       SECRET_SET=yes
 
 kubectl describe pod -n learn -l app=hello-config
 ```
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `kubectl apply -f ...` | NS / CM / Secret / Deployment 等を一括適用 | 仕切り付きアプリを一度に作る |
+| `kubectl apply -f ...` | NS / CM / Secret / Deployment 等を一括適用 | 仕切り付きアプリを一度に作る。このとき段1（env へのコピー）が起きる |
 | `kubectl get ns learn` | Namespace の存在確認 | 仕切りができたか見る |
 | `kubectl get configmap,secret -n learn` | 指定 NS の設定類を一覧 | `-n` = Namespace 指定 |
 | `kubectl get pods -n learn` | その NS の Pod | アプリが learn にいるか確認 |
-| `kubectl get configmap ... -o yaml` | ConfigMap の中身を表示 | 「保管庫に何が入っているか」を見る |
-| `kubectl logs -n learn deploy/...` | Pod が印刷した標準出力を読む | 「環境変数として渡ったか」を echo 結果で確認する |
+| `kubectl get configmap ... -o yaml` | ConfigMap の中身を表示 | 段1の元データ（保管庫）を確認 |
+| `kubectl logs -n learn deploy/...` | echo の印刷＝標準出力を読む | 段2〜3の結果。Config が env 経由で渡った証拠 |
 | `kubectl describe ... -n learn` | 詳細 | env の参照設定を確認 |
 
 片付け:
@@ -179,9 +195,14 @@ kubectl delete -f ../manifests/04-namespace-config.yaml
 
 - `learn` Namespace がある
 - Pod が `Running`
-- logs に `MESSAGE=hello from ConfigMap` と `SECRET_SET=yes`
+- `kubectl logs` に次が出る（＝段2の echo が段3のログになった）:
+
+```text
+MESSAGE=hello from ConfigMap
+SECRET_SET=yes
+```
 
 ## 完了条件（DoD）
 
 - [ ] `-n` の目的を説明できる
-- [ ] YAML で ConfigMap / Secret が env に渡る流れを説明できる
+- [ ] 「ConfigMap → env → echo → logs」の 3 段を自分の言葉で説明できる
