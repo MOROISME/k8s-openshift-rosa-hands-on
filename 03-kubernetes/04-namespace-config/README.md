@@ -90,19 +90,54 @@ spec:
 
 | フィールド | 意味 | 目的 |
 |------------|------|------|
-| `command` | 起動時に実行するコマンド | 渡された値をログに出して確認する |
+| `command` | 起動時に実行するコマンド | 渡された値を **echo（印刷）** して確認する |
 | `env[].valueFrom.configMapKeyRef` | ConfigMap から環境変数へ | イメージに設定を焼き込まない |
 | `env[].valueFrom.secretKeyRef` | Secret から環境変数へ | パスワードを別管理する |
 
-流れ:
+### 「ログで見る」とは何か（ここが本題）
+
+ConfigMap は「設定の保管庫」です。渡ったかどうかは、保管庫を見るだけでは不十分で、**Pod の中に環境変数として入ったか**を確認します。
+
+この演習のコンテナは、起動すると次のようなシェルを実行します（YAML の `command`）:
+
+```sh
+echo MESSAGE=$APP_MESSAGE
+echo SECRET_SET=$( [ -n "$APP_PASSWORD" ] && echo yes || echo no )
+sleep 3600
+```
+
+| 行 | やっていること | なぜそうするか |
+|----|----------------|----------------|
+| `echo MESSAGE=$APP_MESSAGE` | 環境変数 `APP_MESSAGE` の中身を印刷 | ConfigMap から渡った文字列が本当に入っているか見る |
+| `echo SECRET_SET=yes/no` | パスワードが **空でないか** だけ印刷 | パスワード本文はログに出さない（漏洩防止の習慣） |
+| `sleep 3600` | 1 時間待つ | すぐ終了すると Pod が落ちるので居座る |
+
+`echo` の出力はコンテナの **標準出力** に出ます。  
+Kubernetes ではそれを **`kubectl logs` で読む**のが定番です（＝「ログで見る」）。
+
+流れ（番号どおりに腹落ちさせる）:
 
 ```text
-ConfigMap / Secret（learn NS）
-        ↓ valueFrom で参照
-Deployment → Pod の環境変数 APP_MESSAGE / APP_PASSWORD
-        ↓ echo
-kubectl logs に MESSAGE=... / SECRET_SET=yes
+① ConfigMap に APP_MESSAGE = "hello from ConfigMap" を置く
+② Deployment の env が configMapKeyRef でそれを参照
+③ Pod 起動時、コンテナの環境変数 APP_MESSAGE にコピーされる
+④ command の echo が MESSAGE=hello from ConfigMap と印刷する
+⑤ kubectl logs でその印刷結果を読む  ← 「Config が渡った結果をログで見る」
 ```
+
+成功時に見える例:
+
+```text
+MESSAGE=hello from ConfigMap
+SECRET_SET=yes
+```
+
+| 行 | 読み方 |
+|----|--------|
+| `MESSAGE=hello from ConfigMap` | ConfigMap の値が環境変数経由で届いた |
+| `SECRET_SET=yes` | Secret も環境変数に入った（中身の文字列は出していない） |
+
+もし ConfigMap 参照が壊れていると、だいたい `MESSAGE=`（空）になります。
 
 ## ハンズオン
 
@@ -115,7 +150,12 @@ kubectl get ns learn
 kubectl get configmap,secret -n learn
 kubectl get pods -n learn
 
+# ① の保管庫の中身（設定そのもの）
+kubectl get configmap hello-config -n learn -o yaml
+
+# ④⑤ Pod が echo した内容（「渡った結果」）
 kubectl logs -n learn deploy/hello-config
+
 kubectl describe pod -n learn -l app=hello-config
 ```
 
@@ -125,8 +165,9 @@ kubectl describe pod -n learn -l app=hello-config
 | `kubectl get ns learn` | Namespace の存在確認 | 仕切りができたか見る |
 | `kubectl get configmap,secret -n learn` | 指定 NS の設定類を一覧 | `-n` = Namespace 指定 |
 | `kubectl get pods -n learn` | その NS の Pod | アプリが learn にいるか確認 |
-| `kubectl logs -n learn deploy/...` | Deployment 配下 Pod のログ | Config が渡った結果をログで見る |
-| `kubectl describe ... -n learn` | 詳細 | 環境変数の実態を確認 |
+| `kubectl get configmap ... -o yaml` | ConfigMap の中身を表示 | 「保管庫に何が入っているか」を見る |
+| `kubectl logs -n learn deploy/...` | Pod が印刷した標準出力を読む | 「環境変数として渡ったか」を echo 結果で確認する |
+| `kubectl describe ... -n learn` | 詳細 | env の参照設定を確認 |
 
 片付け:
 
