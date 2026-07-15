@@ -70,99 +70,92 @@ Console に入れたら成功の目安:
 
 | Console で見るもの | 意味 |
 |--------------------|------|
-| 左上付近のロゴ / プロジェクト名 | OpenShift の管理画面に入れている |
+| URL に `console-openshift-console.apps....` | OpenShift の Web Console |
+| Project（例: `moroisme-dev`）が **Active** | 作業する仕切りに入れている |
 | 右上のユーザー名 | ログイン中の自分 |
-| **Developer** / **Administrator** の切替 | 画面の見え方が違う（最初は Developer で十分） |
+| **Developer** / **Administrator** の切替 | 最初は Developer で十分 |
 
-目的: ブラウザだけでクラスタを触れる状態にする（ここまでで GUI ハンズオンは可能）。
+右上の **端末アイコン** を押すと、画面下に **OpenShift コマンドラインターミナル**（Web Terminal）が開くことがある。  
+そこで `oc version --client` が動けば、Console 内でも `oc` は使える。
+
+| やり方 | どこで打つか | この教材での扱い |
+|--------|--------------|------------------|
+| Web Terminal（右上の端末アイコン） | Console の下ペイン | 使ってよい |
+| 自分の Mac のターミナル | 手元のシェル | 推奨。手順 4 の Copy login command が必要 |
+
+**「Sandbox を起動し Web Console を開く」は、Project が見える Console まで来ていれば完了。**  
+下の Web Terminal が開いているかは必須ではない。
+
+目的: ブラウザだけでクラスタを触れる状態にする。
 
 つまずき:
 
 | 症状 | 対処 |
 |------|------|
-| 製品カードは見えるが Console が無い | **OpenShift** の **Try it** を押す（ホーム画面のままでは Console ではない） |
-| 期限切れ / 使えない | 同じページから再申請。その間は Minikube に戻る |
-| ログイン画面がループする | 別タブ・シークレットウィンドウ、または一度ログアウトして再試行 |
-| Console が真っ白 | しばらく待って再読み込み。ブラウザを変える |
+| 製品カードは見えるが Console が無い | **OpenShift** の **Try it** を押す |
+| 期限切れ / 使えない | 再申請。その間は Minikube |
+| ログイン画面がループする | 別タブ・シークレットウィンドウ、または再ログイン |
+| Console が真っ白 | 再読み込み。ブラウザを変える |
 
-### 手順 4:（推奨）`oc` でログインする — Copy login command
+### 手順 4:（推奨）手元の Mac で `oc` ログイン — Copy login command
 
-YAML ハンズオン（後の節）ではターミナルの `oc` が楽です。Console からログイン用コマンドをコピーします。
+このリポジトリの `manifests/` を apply するなら、**Mac のターミナル**の方が扱いやすい。  
+そのためのログインが Copy login command。
 
-#### 4-1. `oc` が無い場合（インストール）
+> Web Terminal だけで GUI / 簡単な `oc` 確認するなら、手順 4 はスキップしてよい。  
+> Web Terminal にログインしていても、**Mac 側は別セッション**なので別途 `oc login` が必要。
 
-Console 右上の **`?`（ヘルプ）** → **Command Line Tools** を開く。  
-macOS 向けの `oc` ダウンロードリンクがあるので、自分の環境に合わせて入れて PATH を通す。
+#### 4-1. `oc` が無い場合（Mac 用）
 
-確認:
+Console 右上の **`?`** → **Command Line Tools** から macOS 向け `oc` を入れて PATH を通す。
 
 ```bash
+# Mac のターミナルで
 oc version --client
-# Client Version: ... が出れば OK
 ```
-
-（Homebrew 等で入れても可。公式の Command Line Tools ページからでも可。）
 
 #### 4-2. ログインコマンドをコピーする
 
-やり方は Console の版で次のどちらか（両方探してよい）:
+場所: **Web Console**（製品カードのホームではない。Project が見える画面）
 
-**A. よくある新しい UI**
+**A.** 右上のユーザー名 → **Copy login command**（または「ログインコマンドをコピー」）  
+**B.** 右上の **`?`** → **Command Line Tools** → **Copy login command**
 
-1. Console **右上の自分のユーザー名** をクリック  
-2. **Copy login command** を選ぶ  
+続き:
 
-**B. ヘルプ経由**
+1. 新タブで **DevSandbox**（出た場合）  
+2. **Display Token**  
+3. `oc login --token=... --server=https://...` の行をすべてコピー  
 
-1. 右上の **`?`** → **Command Line Tools**  
-2. **Copy login command** リンクをクリック  
-
-どちらの場合も続きは同じです:
-
-3. 新しいタブが開く → 認証で **DevSandbox** を選ぶ（出た場合）  
-4. **Display Token** をクリック（トークンは最初マスクされていることが多い）  
-5. **`oc login --token=... --server=https://...`** の行をすべてコピー  
-
-#### 4-3. ターミナルに貼り付けてログイン
+#### 4-3. Mac のターミナルに貼り付けてログイン
 
 ```bash
-# 例（トークンと URL は自分の画面のものを使う。ここに書かれた例のままだと失敗する）
+# トークンと URL は自分の画面のものを使う
 oc login --token=sha256~xxxxxxxx --server=https://api.xxxxx.openshiftapps.com:6443
 ```
 
-成功するとだいたい次のような表示になります:
-
-```text
-Logged into "https://api....:6443" as "...." using the token provided.
-...
-Using project "...."
-```
-
 #### 4-4. ログイン確認
-
-リポジトリのこの Step のディレクトリで:
 
 ```bash
 cd 05-openshift
 
 oc whoami
 oc project
+# 例: Using project "moroisme-dev" など
 ```
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `oc whoami` | 今のユーザー名を表示 | ログインできているか確認（`kubectl` に相当する OpenShift クライアントが `oc`） |
-| `oc project` | 現在の Project | どの仕切りで作業するか確認（だいたい Namespace + 権限の寄せ集め） |
-
-目的: 以降の `oc apply -f manifests/...` が「正しいクラスタ・正しい Project」に届くようにする。
+| `oc whoami` | 今のユーザー | ログイン確認 |
+| `oc project` | 現在の Project | 正しい仕切りか確認 |
 
 注意:
 
 | こと | 意味 |
 |------|------|
-| トークンは秘密情報 | チャットや Git に貼らない。期限切れしたら Copy login command をやり直す |
-| `oc` 未インストールでも | Console だけでも一部はできるが、この教材の YAML 手順は `oc` 推奨 |
-| Minikube と混同しない | `kubectl` はローカル Minikube、`oc`（このログイン後）はクラウド上の Sandbox |
+| トークンは秘密情報 | チャットや Git に貼らない |
+| Web Terminal ≠ Mac | 片方にログインしても、もう片方は別途必要 |
+| Minikube と混同しない | `kubectl`（ローカル）と Sandbox の `oc` は別物 |
 
 ## A. 概念チェック
 
