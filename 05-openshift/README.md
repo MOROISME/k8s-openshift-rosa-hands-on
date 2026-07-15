@@ -5,284 +5,69 @@
 
 ポリシー: [docs/free-tier.md](../docs/free-tier.md)
 
-## 前提（Developer Sandbox を使えるようにする）
+## 前提（Developer Sandbox）
 
-ここは **ブラウザ操作が中心**です。ボタン文言はたまに変わりますが、流れは同じです。  
-有料クラスタは作りません（[docs/free-tier.md](../docs/free-tier.md)）。
+有料クラスタは作らない。[docs/free-tier.md](../docs/free-tier.md)
 
-### 手順 1: Sandbox の案内ページを開く
+### 1. Console を開く
 
-ブラウザで次を開く:
+1. https://developers.redhat.com/developer-sandbox を開く  
+2. Red Hat アカウントでログイン（無ければ無料登録。SMS 確認が出ることがある）  
+3. **Try Red Hat products** のカード一覧で、**OpenShift** の **Try it** を押す  
+   （AI / Ansible など他カードは使わない）  
+4. **DevSandbox** / 同意が出たら進み、**Web Console** を開く  
 
-https://developers.redhat.com/developer-sandbox
+成功の目安: URL が `console-openshift-console.apps....`、Project（例: `xxxxx-dev`）が **Active**。
 
-続けてログインすると、**Developer Sandbox**（Red Hat Developer Hub）のホームに入ることがある。  
-見出しはだいたい次のどれか:
+| 補足 | |
+|------|--|
+| 右上の端末アイコン | Console 内蔵の Web Terminal（任意） |
+| この教材の YAML apply | **Mac のターミナル + `oc`** を推奨（次へ） |
 
-- `Developer Sandbox`
-- `Try Red Hat products`
+### 2. Mac に `oc` を入れる
 
-| 見ること | 意味 |
-|----------|------|
-| 製品カードが並ぶ画面（OpenShift / OpenShift AI など） | 無料トライアル用の入口（いまの公式 UI） |
-| 右上に自分の名前 | ログイン済み |
+Console 右上 **`?` → Command Line Tools** から macOS 用を取得。  
+`uname -m` が `arm64` → Apple Silicon、`x86_64` → Intel。
 
-目的: 「無料 Sandbox を始める公式の入口」にたどり着く。
-
-### 手順 2: Red Hat アカウントでログイン（無料）
-
-まだログイン前なら:
-
-1. 案内ページの **Get started** / **Log in** 系を押す  
-2. **Red Hat アカウント**でサインイン  
-3. アカウントが無い場合は **Register** で無料作成（メール確認が必要なことがある）  
-4. 初回は電話番号 SMS 確認を求められることがある → 案内どおり入力  
-
-| ポイント | 意味 |
-|----------|------|
-| Red Hat アカウント | 開発者向け無料アカウント（この教材では有料契約は不要） |
-| SMS 確認 | 不正利用防止。Sandbox 初回でよくある |
-
-目的: 「誰として Sandbox を使うか」を確定する。
-
-すでに右上に自分の名前が出ている画面なら、手順 2 は完了済み → 手順 3 へ。
-
-### 手順 3: Sandbox を起動し Web Console を開く
-
-**いまの UI（製品カードが並ぶ画面）での正しい操作:**
-
-1. **OpenShift** のカードを探す（「Comprehensive cloud-native application platform」などと書いてある）  
-2. そのカードの **Try it** を押す（この教材で使うのは OpenShift。AI / Ansible など他カードではない）  
-3. 認証の選択で **DevSandbox** が出たらそれを選ぶ  
-4. 利用規約に同意を求められたら同意する  
-5. 準備中の画面が出たら待つ  
-6. 準備ができたら **OpenShift Web Console** が開く（または **Console** / **Open console** へのリンクを押す）  
-
-古い案内に「Launch your Developer Sandbox」とあっても、今は **OpenShift カードの Try it** がそれに相当します。
-
-この教材で押す場所:
-
-| 押してよい | 押さない（この Step では不要） |
-|------------|--------------------------------|
-| **OpenShift** の **Try it** | OpenShift AI / Dev Spaces / Ansible / Virtualization / OpenClaw など |
-
-Console に入れたら成功の目安:
-
-| Console で見るもの | 意味 |
-|--------------------|------|
-| URL に `console-openshift-console.apps....` | OpenShift の Web Console |
-| Project（例: `moroisme-dev`）が **Active** | 作業する仕切りに入れている |
-| 右上のユーザー名 | ログイン中の自分 |
-| **Developer** / **Administrator** の切替 | 最初は Developer で十分 |
-
-右上の **端末アイコン** を押すと、画面下に **OpenShift コマンドラインターミナル**（Web Terminal）が開くことがある。  
-そこで `oc version --client` が動けば、Console 内でも `oc` は使える。
-
-| やり方 | どこで打つか | この教材での扱い |
-|--------|--------------|------------------|
-| Web Terminal（右上の端末アイコン） | Console の下ペイン | 使ってよい |
-| 自分の Mac のターミナル | 手元のシェル | 推奨。手順 4 の Copy login command が必要 |
-
-**「Sandbox を起動し Web Console を開く」は、Project が見える Console まで来ていれば完了。**  
-下の Web Terminal が開いているかは必須ではない。
-
-目的: ブラウザだけでクラスタを触れる状態にする。
-
-つまずき:
-
-| 症状 | 対処 |
-|------|------|
-| 製品カードは見えるが Console が無い | **OpenShift** の **Try it** を押す |
-| 期限切れ / 使えない | 再申請。その間は Minikube |
-| ログイン画面がループする | 別タブ・シークレットウィンドウ、または再ログイン |
-| Console が真っ白 | 再読み込み。ブラウザを変える |
-
-### 手順 4:（推奨）手元の Mac で `oc` ログイン — Copy login command
-
-このリポジトリの `manifests/` を apply するなら、**Mac のターミナル**の方が扱いやすい。  
-そのためのログインが Copy login command。
-
-> Web Terminal だけで GUI / 簡単な `oc` 確認するなら、手順 4 はスキップしてよい。  
-> Web Terminal にログインしていても、**Mac 側は別セッション**なので別途 `oc login` が必要。
-
-#### 4-1. `oc` が無い場合（Mac 用）
-
-Console 右上の **`?`** → **Command Line Tools** から macOS 向け `oc` をダウンロードする。  
-CPU が `arm64` なら **Apple Silicon / arm64**、`x86_64` なら **Intel / amd64** を選ぶ（確認: `uname -m`）。
-
-多くの場合 `.tar.gz` / `.zip` で来るので、ダブルクリックまたはターミナルで展開し、中の **`oc` ファイル**を使う。
-
-注意:
-
-- `oc` は **GUI アプリではなくコマンド**。Finder でダブルクリックして開くものではない
-- ダウンロード直後に開こうとすると、次の警告が出ることがある（正常）:
-
-```text
-“oc” は開いていません
-Apple は、“oc” に ... マルウェアが含まれていないことを検証できませんでした。
-```
-
-**「ゴミ箱に入れる」は押さない。** 公式の CLI でも、未公証バイナリだと macOS が止めることがある。
-
-許可する（どれか 1 つ）:
-
-**A. システム設定（わかりやすい）**
-
-1. ダイアログは **完了** で閉じる  
-2. **システム設定** → **プライバシーとセキュリティ**  
-3. 下の方に「"oc"は使用するためにブロックされました」などが出ていたら **このまま許可**  
-
-**B. 右クリックから開く**
-
-1. Finder で `oc` を **Control + クリック**（または右クリック）→ **開く**  
-2. 再度警告が出たら **開く**  
-
-**C. ターミナルで隔離属性を外す（よくやる）**
+展開して出てきた `oc` を使う（ダブルクリックで開くアプリではない）。
 
 ```bash
-# 展開後の実パスに合わせる（例: Downloads 直下）
-xattr -d com.apple.quarantine ~/Downloads/oc
+# Gatekeeper で止まると出る警告は「ゴミ箱に入れる」せず完了で閉じる
+xattr -d com.apple.quarantine ~/Downloads/oc   # パスは実体に合わせる
 chmod +x ~/Downloads/oc
-```
 
-##### PATH を通す（必須・詳細）
-
-**PATH とは:** ターミナルが「コマンド名だけ」で探すフォルダの一覧。  
-`oc` を PATH 上のどこかに置き、そのフォルダを一覧に入れないと、`oc: command not found` になる。
-
-この教材の定番は **`~/bin/oc`** に置き、`~/bin` を PATH に追加するやり方。
-
-**手順 P1: `oc` の実体を探す**
-
-Finder の「ダウンロード」か、展開したフォルダの中に `oc` がある。ターミナルなら:
-
-```bash
-ls ~/Downloads/oc
-# 無いときは展開先を探す例:
-ls ~/Downloads/*/oc 2>/dev/null
-find ~/Downloads -name oc -type f 2>/dev/null
-```
-
-見つかったパスを以降では `（ocの場所）` と呼ぶ。例: `/Users/あなた/Downloads/oc`
-
-**手順 P2: 実行権限を付ける**
-
-```bash
-chmod +x "（ocの場所）"
-# 例:
-chmod +x ~/Downloads/oc
-```
-
-**手順 P3: `~/bin` に移す（名前は必ず `oc`）**
-
-```bash
 mkdir -p ~/bin
-mv "（ocの場所）" ~/bin/oc
-# 例:
-# mv ~/Downloads/oc ~/bin/oc
+mv ~/Downloads/oc ~/bin/oc
 
-chmod +x ~/bin/oc
-ls -l ~/bin/oc
-# -rwxr-xr-x ... oc のように x が付いていれば OK
-```
-
-すでに `~/bin/oc` がある場合は上書き確認される。差し替えてよい。
-
-**手順 P4: `~/.zshrc` に PATH を追加する（永続化）**
-
-macOS のデフォルトシェルは zsh。新しいターミナルでも効くように設定ファイルへ書く。
-
-```bash
-# すでに書いてあるか確認（何も出なければ未設定）
-grep 'HOME/bin' ~/.zshrc || true
-
-# 未設定なら 1 行追加
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
-```
-
-| やっていること | 意味 |
-|----------------|------|
-| `export PATH=...` | このシェルで使う検索パスを更新 |
-| `$HOME/bin` を先頭に | `~/bin` 内の `oc` を優先して見つける |
-| `>> ~/.zshrc` | 今後開くターミナルにも残す |
-
-**手順 P5: 今のターミナルに即反映する**
-
-```bash
+# 未設定なら 1 回だけ（重複追記しない）
+grep -q 'HOME/bin' ~/.zshrc || echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
-```
 
-または、ターミナルを一度閉じて開き直す。
-
-**手順 P6: 通ったか確認する**
-
-```bash
-which oc
-# 期待: /Users/あなた/bin/oc  （~/bin/oc）
-
+which oc          # → .../bin/oc
 oc version --client
-# Client Version: ... が出れば OK
 ```
 
-| 結果 | 意味 | 対処 |
-|------|------|------|
-| `which oc` が `~/bin/oc` | PATH 成功 | 次のログイン手順へ |
-| `oc: command not found` | PATH 未反映 or 置き場所違い | P3〜P5 を見直す。`ls ~/bin/oc` があるか確認 |
-| `permission denied` | 実行権限なし | `chmod +x ~/bin/oc` |
-| 警告ダイアログだけ出る | Gatekeeper | 上の許可手順 A〜C |
+| 用語 | 短く言うと |
+|------|------------|
+| PATH | `oc` と打ったとき探すフォルダ一覧。`~/bin` を載せる |
+| `xattr -d ...quarantine` | ダウンロード隔離マークを外す（Gatekeeper 対策） |
 
-つまずき（PATH）:
+別案: `brew install openshift-cli`
 
-| 症状 | 原因 | 対処 |
-|------|------|------|
-| Downloads では動くが `oc` 単体はダメ | PATH に Downloads を入れていない | `~/bin` 方式にする（推奨） |
-| 新しいターミナルだけダメ | `source` したけど `.zshrc` に書いてない | P4 をやり直す |
-| `echo` を何回もやって PATH が重複 | 何度も追記した | `~/.zshrc` を開き、同じ行は 1 つ残す |
+### 3. Mac で `oc login`
 
-（Homebrew で入れる場合の例: `brew install openshift-cli`。入ったら `which oc` で場所を確認。その場合も「PATH に載っているか」の確認は同じ。）
-
-#### 4-2. ログインコマンドをコピーする
-
-場所: **Web Console**（製品カードのホームではない。Project が見える画面）
-
-**A.** 右上のユーザー名 → **Copy login command**（または「ログインコマンドをコピー」）  
-**B.** 右上の **`?`** → **Command Line Tools** → **Copy login command**
-
-続き:
-
-1. 新タブで **DevSandbox**（出た場合）  
-2. **Display Token**  
-3. `oc login --token=... --server=https://...` の行をすべてコピー  
-
-#### 4-3. Mac のターミナルに貼り付けてログイン
-
-```bash
-# トークンと URL は自分の画面のものを使う
-oc login --token=sha256~xxxxxxxx --server=https://api.xxxxx.openshiftapps.com:6443
-```
-
-#### 4-4. ログイン確認
+1. Console（Project が見える画面）右上のユーザー名 → **Copy login command**  
+   （または `?` → Command Line Tools → Copy login command）  
+2. **Display Token** → `oc login --token=... --server=...` をコピー  
+3. **Mac のターミナル**に貼り付けて実行  
 
 ```bash
 cd 05-openshift
-
 oc whoami
 oc project
-# 例: Using project "moroisme-dev" など
 ```
 
-| コマンド | 意味 | 目的 |
-|----------|------|------|
-| `oc whoami` | 今のユーザー | ログイン確認 |
-| `oc project` | 現在の Project | 正しい仕切りか確認 |
-
-注意:
-
-| こと | 意味 |
-|------|------|
-| トークンは秘密情報 | チャットや Git に貼らない |
-| Web Terminal ≠ Mac | 片方にログインしても、もう片方は別途必要 |
-| Minikube と混同しない | `kubectl`（ローカル）と Sandbox の `oc` は別物 |
+トークンは秘密情報。Web Terminal と Mac は別セッション。`kubectl`（Minikube）と混同しない。
 
 ## A. 概念チェック
 
