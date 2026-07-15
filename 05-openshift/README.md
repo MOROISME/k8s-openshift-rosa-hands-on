@@ -16,17 +16,25 @@
 
 https://developers.redhat.com/developer-sandbox
 
+続けてログインすると、**Developer Sandbox**（Red Hat Developer Hub）のホームに入ることがある。  
+見出しはだいたい次のどれか:
+
+- `Developer Sandbox`
+- `Try Red Hat products`
+
 | 見ること | 意味 |
 |----------|------|
-| Developer Sandbox の説明ページ | 無料の学習用 OpenShift 環境の入口 |
-| **Get started** / **Launch** 系のボタン | 申込・起動フローへ進む |
+| 製品カードが並ぶ画面（OpenShift / OpenShift AI など） | 無料トライアル用の入口（いまの公式 UI） |
+| 右上に自分の名前 | ログイン済み |
 
 目的: 「無料 Sandbox を始める公式の入口」にたどり着く。
 
 ### 手順 2: Red Hat アカウントでログイン（無料）
 
-1. **Get started in the Sandbox**（または同趣旨のボタン）を押す  
-2. ログイン画面が出たら **Red Hat アカウント**でサインイン  
+まだログイン前なら:
+
+1. 案内ページの **Get started** / **Log in** 系を押す  
+2. **Red Hat アカウント**でサインイン  
 3. アカウントが無い場合は **Register** で無料作成（メール確認が必要なことがある）  
 4. 初回は電話番号 SMS 確認を求められることがある → 案内どおり入力  
 
@@ -37,15 +45,26 @@ https://developers.redhat.com/developer-sandbox
 
 目的: 「誰として Sandbox を使うか」を確定する。
 
+すでに右上に自分の名前が出ている画面なら、手順 2 は完了済み → 手順 3 へ。
+
 ### 手順 3: Sandbox を起動し Web Console を開く
 
-ログイン後の流れ（文言は前後することがある）:
+**いまの UI（製品カードが並ぶ画面）での正しい操作:**
 
-1. **Launch your Developer Sandbox** / **Start using your sandbox** などを押す  
-2. 認証の選択で **DevSandbox** が出たらそれを選ぶ  
-3. 利用規約に同意を求められたら同意する  
-4. しばらく待つ（準備中の画面が出ることがある）  
-5. 準備ができたら **OpenShift Web Console** が開く（または **Console** へのリンクを押す）  
+1. **OpenShift** のカードを探す（「Comprehensive cloud-native application platform」などと書いてある）  
+2. そのカードの **Try it** を押す（この教材で使うのは OpenShift。AI / Ansible など他カードではない）  
+3. 認証の選択で **DevSandbox** が出たらそれを選ぶ  
+4. 利用規約に同意を求められたら同意する  
+5. 準備中の画面が出たら待つ  
+6. 準備ができたら **OpenShift Web Console** が開く（または **Console** / **Open console** へのリンクを押す）  
+
+古い案内に「Launch your Developer Sandbox」とあっても、今は **OpenShift カードの Try it** がそれに相当します。
+
+この教材で押す場所:
+
+| 押してよい | 押さない（この Step では不要） |
+|------------|--------------------------------|
+| **OpenShift** の **Try it** | OpenShift AI / Dev Spaces / Ansible / Virtualization / OpenClaw など |
 
 Console に入れたら成功の目安:
 
@@ -61,6 +80,7 @@ Console に入れたら成功の目安:
 
 | 症状 | 対処 |
 |------|------|
+| 製品カードは見えるが Console が無い | **OpenShift** の **Try it** を押す（ホーム画面のままでは Console ではない） |
 | 期限切れ / 使えない | 同じページから再申請。その間は Minikube に戻る |
 | ログイン画面がループする | 別タブ・シークレットウィンドウ、または一度ログアウトして再試行 |
 | Console が真っ白 | しばらく待って再読み込み。ブラウザを変える |
