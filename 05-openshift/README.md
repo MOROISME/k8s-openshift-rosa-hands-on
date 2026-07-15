@@ -216,26 +216,14 @@ curl -I https://<route-host>
 | --------------------- | ----------------- |
 | `curl -I https://...` | Route 経由で外から届くか確認 |
 
-
-片付け:
-
-```bash
-oc delete -f manifests/app-route.yaml
-oc delete -f manifests/app-service.yaml
-oc delete -f manifests/app-deployment.yaml
-```
-
-
-| コマンド               | 目的                |
-| ------------------ | ----------------- |
-| `oc delete -f ...` | 依存の逆順でも可。学習用を残さない |
-
+> **ここではまだ削除しない。** このあと D で `logs` / `describe` に使う。  
+> 片付けは Step 末尾（F のあと）でまとめて行う。
 
 ### 期待結果
 
 - Pod `1/1 Running`
 - Route に HOST が出る
-- curl / ブラウザで 200 相当
+- curl / ブラウザで 200 相当（HTTP 直叩きは 302 → HTTPS も正しい）
 
 ## D. `oc` 基本（観察セット）
 
@@ -302,6 +290,22 @@ oc get csv -A 2>/dev/null || true
 
 **Operator = 運用手順のソフトウェア化。**  
 Sandbox では取れない／空に見えるのが普通です。
+
+## 片付け（D〜F が終わってから）
+
+C でデプロイしたアプリが残っている前提で D をやったあと、最後に消す。
+
+```bash
+cd 05-openshift
+
+oc delete -f manifests/app-route.yaml
+oc delete -f manifests/app-service.yaml
+oc delete -f manifests/app-deployment.yaml
+```
+
+| コマンド | 目的 |
+|----------|------|
+| `oc delete -f ...` | 学習用リソースを残さない（Route → Service → Deployment の順でも可） |
 
 ## トラブル時
 
