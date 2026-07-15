@@ -107,8 +107,10 @@ Console に入れたら成功の目安:
 
 #### 4-1. `oc` が無い場合（Mac 用）
 
-Console 右上の **`?`** → **Command Line Tools** から macOS 向け `oc` を入れて PATH を通す。  
+Console 右上の **`?`** → **Command Line Tools** から macOS 向け `oc` をダウンロードする。  
 CPU が `arm64` なら **Apple Silicon / arm64**、`x86_64` なら **Intel / amd64** を選ぶ（確認: `uname -m`）。
+
+多くの場合 `.tar.gz` / `.zip` で来るので、ダブルクリックまたはターミナルで展開し、中の **`oc` ファイル**を使う。
 
 注意:
 
@@ -138,28 +140,106 @@ Apple は、“oc” に ... マルウェアが含まれていないことを検
 **C. ターミナルで隔離属性を外す（よくやる）**
 
 ```bash
-# ダウンロード先のパスは自分の環境に合わせる（例）
+# 展開後の実パスに合わせる（例: Downloads 直下）
 xattr -d com.apple.quarantine ~/Downloads/oc
-# または展開したディレクトリ内の oc
-chmod +x ~/Downloads/oc   # 必要なら実行権限も付与
+chmod +x ~/Downloads/oc
 ```
 
-PATH に置く例:
+##### PATH を通す（必須・詳細）
+
+**PATH とは:** ターミナルが「コマンド名だけ」で探すフォルダの一覧。  
+`oc` を PATH 上のどこかに置き、そのフォルダを一覧に入れないと、`oc: command not found` になる。
+
+この教材の定番は **`~/bin/oc`** に置き、`~/bin` を PATH に追加するやり方。
+
+**手順 P1: `oc` の実体を探す**
+
+Finder の「ダウンロード」か、展開したフォルダの中に `oc` がある。ターミナルなら:
+
+```bash
+ls ~/Downloads/oc
+# 無いときは展開先を探す例:
+ls ~/Downloads/*/oc 2>/dev/null
+find ~/Downloads -name oc -type f 2>/dev/null
+```
+
+見つかったパスを以降では `（ocの場所）` と呼ぶ。例: `/Users/あなた/Downloads/oc`
+
+**手順 P2: 実行権限を付ける**
+
+```bash
+chmod +x "（ocの場所）"
+# 例:
+chmod +x ~/Downloads/oc
+```
+
+**手順 P3: `~/bin` に移す（名前は必ず `oc`）**
 
 ```bash
 mkdir -p ~/bin
-mv ~/Downloads/oc ~/bin/oc   # 実パスに合わせて
+mv "（ocの場所）" ~/bin/oc
+# 例:
+# mv ~/Downloads/oc ~/bin/oc
+
 chmod +x ~/bin/oc
+ls -l ~/bin/oc
+# -rwxr-xr-x ... oc のように x が付いていれば OK
+```
+
+すでに `~/bin/oc` がある場合は上書き確認される。差し替えてよい。
+
+**手順 P4: `~/.zshrc` に PATH を追加する（永続化）**
+
+macOS のデフォルトシェルは zsh。新しいターミナルでも効くように設定ファイルへ書く。
+
+```bash
+# すでに書いてあるか確認（何も出なければ未設定）
+grep 'HOME/bin' ~/.zshrc || true
+
+# 未設定なら 1 行追加
 echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
+```
+
+| やっていること | 意味 |
+|----------------|------|
+| `export PATH=...` | このシェルで使う検索パスを更新 |
+| `$HOME/bin` を先頭に | `~/bin` 内の `oc` を優先して見つける |
+| `>> ~/.zshrc` | 今後開くターミナルにも残す |
+
+**手順 P5: 今のターミナルに即反映する**
+
+```bash
 source ~/.zshrc
 ```
 
-確認（**Mac のターミナル**で）:
+または、ターミナルを一度閉じて開き直す。
+
+**手順 P6: 通ったか確認する**
 
 ```bash
+which oc
+# 期待: /Users/あなた/bin/oc  （~/bin/oc）
+
 oc version --client
 # Client Version: ... が出れば OK
 ```
+
+| 結果 | 意味 | 対処 |
+|------|------|------|
+| `which oc` が `~/bin/oc` | PATH 成功 | 次のログイン手順へ |
+| `oc: command not found` | PATH 未反映 or 置き場所違い | P3〜P5 を見直す。`ls ~/bin/oc` があるか確認 |
+| `permission denied` | 実行権限なし | `chmod +x ~/bin/oc` |
+| 警告ダイアログだけ出る | Gatekeeper | 上の許可手順 A〜C |
+
+つまずき（PATH）:
+
+| 症状 | 原因 | 対処 |
+|------|------|------|
+| Downloads では動くが `oc` 単体はダメ | PATH に Downloads を入れていない | `~/bin` 方式にする（推奨） |
+| 新しいターミナルだけダメ | `source` したけど `.zshrc` に書いてない | P4 をやり直す |
+| `echo` を何回もやって PATH が重複 | 何度も追記した | `~/.zshrc` を開き、同じ行は 1 つ残す |
+
+（Homebrew で入れる場合の例: `brew install openshift-cli`。入ったら `which oc` で場所を確認。その場合も「PATH に載っているか」の確認は同じ。）
 
 #### 4-2. ログインコマンドをコピーする
 
