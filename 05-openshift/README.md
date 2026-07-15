@@ -107,11 +107,58 @@ Console に入れたら成功の目安:
 
 #### 4-1. `oc` が無い場合（Mac 用）
 
-Console 右上の **`?`** → **Command Line Tools** から macOS 向け `oc` を入れて PATH を通す。
+Console 右上の **`?`** → **Command Line Tools** から macOS 向け `oc` を入れて PATH を通す。  
+CPU が `arm64` なら **Apple Silicon / arm64**、`x86_64` なら **Intel / amd64** を選ぶ（確認: `uname -m`）。
+
+注意:
+
+- `oc` は **GUI アプリではなくコマンド**。Finder でダブルクリックして開くものではない
+- ダウンロード直後に開こうとすると、次の警告が出ることがある（正常）:
+
+```text
+“oc” は開いていません
+Apple は、“oc” に ... マルウェアが含まれていないことを検証できませんでした。
+```
+
+**「ゴミ箱に入れる」は押さない。** 公式の CLI でも、未公証バイナリだと macOS が止めることがある。
+
+許可する（どれか 1 つ）:
+
+**A. システム設定（わかりやすい）**
+
+1. ダイアログは **完了** で閉じる  
+2. **システム設定** → **プライバシーとセキュリティ**  
+3. 下の方に「"oc"は使用するためにブロックされました」などが出ていたら **このまま許可**  
+
+**B. 右クリックから開く**
+
+1. Finder で `oc` を **Control + クリック**（または右クリック）→ **開く**  
+2. 再度警告が出たら **開く**  
+
+**C. ターミナルで隔離属性を外す（よくやる）**
 
 ```bash
-# Mac のターミナルで
+# ダウンロード先のパスは自分の環境に合わせる（例）
+xattr -d com.apple.quarantine ~/Downloads/oc
+# または展開したディレクトリ内の oc
+chmod +x ~/Downloads/oc   # 必要なら実行権限も付与
+```
+
+PATH に置く例:
+
+```bash
+mkdir -p ~/bin
+mv ~/Downloads/oc ~/bin/oc   # 実パスに合わせて
+chmod +x ~/bin/oc
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+確認（**Mac のターミナル**で）:
+
+```bash
 oc version --client
+# Client Version: ... が出れば OK
 ```
 
 #### 4-2. ログインコマンドをコピーする
