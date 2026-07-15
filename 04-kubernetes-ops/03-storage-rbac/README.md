@@ -72,7 +72,48 @@ volumes:
 
 ### ハンズオン（PVC）
 
-#### 手順 0: 場所を確認
+#### 手順 0: クラスタが生きているか確認（必須）
+
+`apply` の前に、Minikube（API サーバ）が動いていることを確認する。  
+PC を再起動したあと・しばらく触っていないときは、ここで止まっていることが多い。
+
+```bash
+# Docker Desktop が起動していること（メニューバーにクジラ）
+# 止まっていたら Docker Desktop を起動してから待つ
+
+minikube status
+# host / kubelet / apiserver が Running なら OK
+
+kubectl get nodes
+# NAME       STATUS   ...
+# minikube   Ready    ...
+```
+
+止まっているときの例（`apply` でも同じ系統）:
+
+```text
+The connection to the server 127.0.0.1:xxxxx was refused
+# または
+failed to download openapi: ... dial tcp 127.0.0.1:xxxxx: connect: connection refused
+```
+
+これは **YAML の誤りではなく、クラスタに繋がっていない** という意味。  
+`--validate=false` は使わない（原因を隠すだけ）。次で直す:
+
+```bash
+minikube start
+
+kubectl get nodes
+# Ready になってから次の手順へ
+```
+
+| コマンド | 意味 | 目的 |
+|----------|------|------|
+| `minikube status` | Minikube の生死確認 | 止まっていないか見る |
+| `kubectl get nodes` | API サーバ疎通 | Ready なら `apply` できる |
+| `minikube start` | クラスタ起動 | 止まっていたら起動し直す |
+
+#### 手順 0.5: 場所を確認
 
 ```bash
 pwd
@@ -361,6 +402,7 @@ kubectl delete -f ../manifests/pvc-demo.yaml
 
 | 症状 | 原因 | 対処 |
 |------|------|------|
+| `connection refused` / `failed to download openapi` | Minikube（または Docker）が止まっている | Docker Desktop 起動 → `minikube start` → `kubectl get nodes` で Ready を確認。`--validate=false` は使わない |
 | `path does not exist` | 作業ディレクトリが違う | `cd 04-kubernetes-ops/03-storage-rbac` |
 | `unknown command "pods"` | `kubectl pods` と打った | `kubectl get pods` |
 | PVC が `Pending` | ストレージ供給が遅い／失敗 | `kubectl describe pvc -n ops-learn` |
