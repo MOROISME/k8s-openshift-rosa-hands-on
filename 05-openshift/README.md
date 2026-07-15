@@ -11,22 +11,24 @@
 
 ### 1. Console を開く
 
-1. https://developers.redhat.com/developer-sandbox を開く  
-2. Red Hat アカウントでログイン（無ければ無料登録。SMS 確認が出ることがある）  
-3. **Try Red Hat products** のカード一覧で、**OpenShift** の **Try it** を押す  
-   （AI / Ansible など他カードは使わない）  
-4. **DevSandbox** / 同意が出たら進み、**Web Console** を開く  
+1. [https://developers.redhat.com/developer-sandbox](https://developers.redhat.com/developer-sandbox) を開く
+2. Red Hat アカウントでログイン（無ければ無料登録。SMS 確認が出ることがある）
+3. **Try Red Hat products** のカード一覧で、**OpenShift** の **Try it** を押す
+  （AI / Ansible など他カードは使わない）
+4. **DevSandbox** / 同意が出たら進み、**Web Console** を開く
 
 成功の目安: URL が `console-openshift-console.apps....`、Project（例: `xxxxx-dev`）が **Active**。
 
-| 補足 | |
-|------|--|
-| 右上の端末アイコン | Console 内蔵の Web Terminal（任意） |
+
+| 補足               |                               |
+| ---------------- | ----------------------------- |
+| 右上の端末アイコン        | Console 内蔵の Web Terminal（任意）  |
 | この教材の YAML apply | **Mac のターミナル + `oc`** を推奨（次へ） |
+
 
 ### 2. Mac に `oc` を入れる
 
-Console 右上 **`?` → Command Line Tools** から macOS 用を取得。  
+Console 右上 `**?` → Command Line Tools** から macOS 用を取得。  
 `uname -m` が `arm64` → Apple Silicon、`x86_64` → Intel。
 
 展開して出てきた `oc` を使う（ダブルクリックで開くアプリではない）。
@@ -47,19 +49,21 @@ which oc          # → .../bin/oc
 oc version --client
 ```
 
-| 用語 | 短く言うと |
-|------|------------|
-| PATH | `oc` と打ったとき探すフォルダ一覧。`~/bin` を載せる |
-| `xattr -d ...quarantine` | ダウンロード隔離マークを外す（Gatekeeper 対策） |
+
+| 用語                       | 短く言うと                            |
+| ------------------------ | -------------------------------- |
+| PATH                     | `oc` と打ったとき探すフォルダ一覧。`~/bin` を載せる |
+| `xattr -d ...quarantine` | ダウンロード隔離マークを外す（Gatekeeper 対策）    |
+
 
 別案: `brew install openshift-cli`
 
 ### 3. Mac で `oc login`
 
-1. Console（Project が見える画面）右上のユーザー名 → **Copy login command**  
-   （または `?` → Command Line Tools → Copy login command）  
-2. **Display Token** → `oc login --token=... --server=...` をコピー  
-3. **Mac のターミナル**に貼り付けて実行  
+1. Console（Project が見える画面）右上のユーザー名 → **Copy login command**
+  （または `?` → Command Line Tools → Copy login command）
+2. **Display Token** → `oc login --token=... --server=...` をコピー
+3. **Mac のターミナル**に貼り付けて実行
 
 ```bash
 cd 05-openshift
@@ -81,10 +85,10 @@ oc project
 
 **目的:** GUI でも同じオブジェクト（Pod / Route / ログ）を追えるようにする。
 
-1. Project を確認  
-2. カタログまたは YAML でデプロイ  
-3. Route URL を開く  
-4. Pod ログを見る  
+1. Project を確認
+2. カタログまたは YAML でデプロイ
+3. Route URL を開く
+4. Pod ログを見る
 
 ## C. YAML ハンズオン
 
@@ -113,13 +117,15 @@ spec:
         runAsNonRoot: true
 ```
 
-| フィールド | 意味 | 目的 |
-|------------|------|------|
-| `nginx-unprivileged` | root 以外で 8080 を聞く nginx | OpenShift の制限付き SCC でも動きやすい |
-| `containerPort: 8080` | 特権ポート（80）を避ける | 非特権ユーザーでも listen できる |
-| `runAsNonRoot` | root で動かさない | SCC / セキュリティ要件に合わせる |
-| `capabilities.drop: ALL` | Linux capability を捨てる | 余計な権限を持たせない |
-| Probe / resources | 健康診断と枠 | Minikube 演習と同じ型 |
+
+| フィールド                    | 意味                      | 目的                          |
+| ------------------------ | ----------------------- | --------------------------- |
+| `nginx-unprivileged`     | root 以外で 8080 を聞く nginx | OpenShift の制限付き SCC でも動きやすい |
+| `containerPort: 8080`    | 特権ポート（80）を避ける           | 非特権ユーザーでも listen できる        |
+| `runAsNonRoot`           | root で動かさない             | SCC / セキュリティ要件に合わせる         |
+| `capabilities.drop: ALL` | Linux capability を捨てる   | 余計な権限を持たせない                 |
+| Probe / resources        | 健康診断と枠                  | Minikube 演習と同じ型             |
+
 
 #### 2) Service（`manifests/app-service.yaml`）
 
@@ -134,11 +140,13 @@ spec:
       targetPort: 8080
 ```
 
-| フィールド | 意味 | 目的 |
-|------------|------|------|
-| `selector.app` | Pod のラベル条件 | Deployment が付ける `app: sandbox-web` と一致 |
-| `port` / `targetPort` | 窓口 → コンテナ | どちらも 8080（非特権） |
-| `ports[].name: http` | ポート名 | Route から `targetPort: http` で参照する |
+
+| フィールド                 | 意味         | 目的                                     |
+| --------------------- | ---------- | -------------------------------------- |
+| `selector.app`        | Pod のラベル条件 | Deployment が付ける `app: sandbox-web` と一致 |
+| `port` / `targetPort` | 窓口 → コンテナ  | どちらも 8080（非特権）                         |
+| `ports[].name: http`  | ポート名       | Route から `targetPort: http` で参照する      |
+
 
 #### 3) Route（`manifests/app-route.yaml`）
 
@@ -156,13 +164,15 @@ spec:
     insecureEdgeTerminationPolicy: Redirect
 ```
 
-| フィールド | 意味 | 目的 |
-|------------|------|------|
-| `kind: Route` | OpenShift の外部入り口 | Ingress に近い役割 |
-| `to.name` | 届け先 Service | `sandbox-web` に転送 |
-| `port.targetPort: http` | Service のポート名 | 上の Service の `name: http` と対応 |
-| `tls.termination: edge` | 入口で TLS 終端 | HTTPS で受けて中は HTTP |
-| `Redirect` | HTTP → HTTPS | 平文アクセスをリダイレクト |
+
+| フィールド                   | 意味               | 目的                            |
+| ----------------------- | ---------------- | ----------------------------- |
+| `kind: Route`           | OpenShift の外部入り口 | Ingress に近い役割                 |
+| `to.name`               | 届け先 Service      | `sandbox-web` に転送             |
+| `port.targetPort: http` | Service のポート名    | 上の Service の `name: http` と対応 |
+| `tls.termination: edge` | 入口で TLS 終端       | HTTPS で受けて中は HTTP             |
+| `Redirect`              | HTTP → HTTPS     | 平文アクセスをリダイレクト                 |
+
 
 流れ:
 
@@ -187,21 +197,25 @@ oc get svc
 oc get route
 ```
 
-| コマンド | 意味 | 目的 |
-|----------|------|------|
-| `oc project` | 現在 Project 表示/切替 | 間違った Project にデプロイしない |
-| `oc apply -f ...deployment` | アプリ本体 | Pod を Deployment で管理 |
-| `oc apply -f ...service` | クラスタ内入口 | Pod への安定アクセス |
-| `oc apply -f ...route` | 外部 URL | OpenShift 流の公開（Ingress 相当） |
-| `oc get pods/svc/route` | 各リソース確認 | Running と HOST を見る |
+
+| コマンド                        | 意味               | 目的                         |
+| --------------------------- | ---------------- | -------------------------- |
+| `oc project`                | 現在 Project 表示/切替 | 間違った Project にデプロイしない      |
+| `oc apply -f ...deployment` | アプリ本体            | Pod を Deployment で管理       |
+| `oc apply -f ...service`    | クラスタ内入口          | Pod への安定アクセス               |
+| `oc apply -f ...route`      | 外部 URL           | OpenShift 流の公開（Ingress 相当） |
+| `oc get pods/svc/route`     | 各リソース確認          | Running と HOST を見る         |
+
 
 ```bash
 curl -I https://<route-host>
 ```
 
-| コマンド | 目的 |
-|----------|------|
+
+| コマンド                  | 目的                |
+| --------------------- | ----------------- |
 | `curl -I https://...` | Route 経由で外から届くか確認 |
+
 
 片付け:
 
@@ -211,9 +225,11 @@ oc delete -f manifests/app-service.yaml
 oc delete -f manifests/app-deployment.yaml
 ```
 
-| コマンド | 目的 |
-|----------|------|
+
+| コマンド               | 目的                |
+| ------------------ | ----------------- |
 | `oc delete -f ...` | 依存の逆順でも可。学習用を残さない |
+
 
 ### 期待結果
 
@@ -232,11 +248,13 @@ oc logs deploy/sandbox-web
 oc describe route/sandbox-web
 ```
 
-| コマンド | 目的 |
-|----------|------|
-| `oc get project` | 触れる Project 一覧 |
-| `oc logs deploy/...` | アプリログ（K8s と同じ型） |
-| `oc describe route/...` | Route の詳細・イベント |
+
+| コマンド                    | 目的              |
+| ----------------------- | --------------- |
+| `oc get project`        | 触れる Project 一覧  |
+| `oc logs deploy/...`    | アプリログ（K8s と同じ型） |
+| `oc describe route/...` | Route の詳細・イベント  |
+
 
 ## E. SCC / RBAC（観察）
 
@@ -248,36 +266,53 @@ oc auth can-i get scc --all-namespaces
 oc get scc 2>/dev/null || echo "SCC list not permitted (expected on Sandbox)"
 ```
 
-| コマンド | 目的 |
-|----------|------|
-| `oc auth can-i ...` | 自分にその API 操作が許されるか |
-| `oc get scc` | SCC 一覧（権限があれば）。拒否されても「制限がある」と分かれば OK |
-| `2>/dev/null \|\| echo ...` | エラーを握りつぶして学習用メッセージ | 権限不足を失敗扱いにしない |
+
+| コマンド                      | 目的                                   |
+| ------------------------- | ------------------------------------ |
+| `oc auth can-i ...`       | 自分にその API 操作が許されるか                   |
+| `oc get scc`              | SCC 一覧（権限があれば）。拒否されても「制限がある」と分かれば OK |
+| `2>/dev/null || echo ...` | エラーを握りつぶして学習用メッセージ                   |
+
 
 - RBAC = API を叩けるか  
-- SCC = Pod がホストに対してどこまでできるか  
+- SCC = Pod がホストに対してどこまでできるか
 
 ## F. Operator（観察）
 
 ```bash
+# まず素で実行（権限エラーが出ることが多い）
+oc get csv -A
+
+# エラーを隠す書き方（何も出なくても異常ではない）
 oc get csv -A 2>/dev/null || true
 ```
 
-| コマンド | 目的 |
-|----------|------|
-| `oc get csv -A` | ClusterServiceVersion＝Operator の導入状態を見る（環境差あり） |
-| `\|\| true` | 失敗してもシェルを落とさない | Sandbox 制限への備え |
+| 結果 | 意味 |
+|------|------|
+| 一覧が出る | Operator（CSV）が見えている |
+| `Forbidden` など | Sandbox ではよくある。この節は概念理解で OK |
+| **何も表示されない** | 権限エラーが `2>/dev/null` で消えただけ。失敗扱いにしない |
 
-**Operator = 運用手順のソフトウェア化。**
+| コマンド部品 | 意味 |
+|--------------|------|
+| `csv` | ClusterServiceVersion＝Operator の導入記録 |
+| `-A` | 全 Namespace |
+| `2>/dev/null` | エラー出力を捨てる |
+| `\|\| true` | 失敗してもシェルを落とさない |
+
+**Operator = 運用手順のソフトウェア化。**  
+Sandbox では取れない／空に見えるのが普通です。
 
 ## トラブル時
 
-| 症状 | 対処 |
-|------|------|
-| 期限切れ | 再申請。その間は Minikube |
-| 権限系で Pod 失敗 | このリポジトリの非特権 YAML を使う |
-| Route 無し | apply 漏れ・Service 名不一致 |
-| login 失敗 | Console から login command 再コピー |
+
+| 症状          | 対処                            |
+| ----------- | ----------------------------- |
+| 期限切れ        | 再申請。その間は Minikube             |
+| 権限系で Pod 失敗 | このリポジトリの非特権 YAML を使う          |
+| Route 無し    | apply 漏れ・Service 名不一致         |
+| login 失敗    | Console から login command 再コピー |
+
 
 ## 完了条件（DoD）
 
