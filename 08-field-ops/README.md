@@ -1,7 +1,7 @@
-# 08. 現場シナリオ（無料環境で演習）
+# 08. 現場の練習問題（無料環境で演習）
 
 **この Step の目的:** 障害を見たとき「最初の 15 分で何をするか」を自分の言葉で言えるようにする。  
-実機は Minikube / Sandbox のみ。ROSA は作らない。
+実機は Minikube / 練習用の無料環境（Sandbox）のみ。ROSA は作らない。
 
 ## ゴール
 
@@ -11,20 +11,20 @@
 
 ## 使い方
 
-1. シナリオを読む  
+1. 練習問題を読む  
 2. 何も見ずに手順を書く（コマンド名だけでなく「何のため」も）  
 3. 模範と照合  
 4. 可能なら無料環境で近い操作  
 
 ---
 
-## シナリオ 1: URL が 503 / タイムアウト
+## 練習問題 1: URL が 503 / タイムアウト
 
 **目的:** 公開 URL 障害を「経路を辿る」型で切る。
 
 | 環境 | やること | 目的 |
 |------|----------|------|
-| Minikube | Step 4 C（selector 壊し） | Endpoints 空＝経路切れを体感 |
+| Minikube | Step 4 C（探す条件 selector 壊し） | 届け先一覧（Endpoints）空＝経路切れを体感 |
 | Sandbox | Route → Service → Pod を辿る | OpenShift 公開経路の確認順を体に入れる |
 
 模範の見方:
@@ -37,7 +37,7 @@
 
 ---
 
-## シナリオ 2: CrashLoopBackOff
+## 練習問題 2: CrashLoopBackOff
 
 **目的:** 単一 Pod 障害の定石順を固定する。
 
@@ -51,11 +51,11 @@ describe → Events → logs (--previous) → 設定/イメージ/Probe/SCC
 | logs / `--previous` | 今・直前コンテナのアプリ出力（再起動後も理由を残す） |
 | Probe / SCC | 「アプリバグ」以外の落とし穴 |
 
-無料実機: Step 4 シナリオ B。
+無料実機: Step 4 練習問題 B。
 
 ---
 
-## シナリオ 3: 多数 NS で ImagePullBackOff
+## 練習問題 3: 多数 NS で ImagePullBackOff
 
 **目的:** 「1 アプリ」か「基盤・レジストリ横断」かを分ける。
 
@@ -63,7 +63,7 @@ describe → Events → logs (--previous) → 設定/イメージ/Probe/SCC
 
 ---
 
-## シナリオ 4: Forbidden
+## 練習問題 4: Forbidden
 
 **目的:** 権限エラーを can-i で再現・切り分ける。
 
@@ -75,7 +75,7 @@ describe → Events → logs (--previous) → 設定/イメージ/Probe/SCC
 
 ---
 
-## シナリオ 5: API が重い / クラスタ異常
+## 練習問題 5: API が重い / クラスタ異常
 
 **目的:** アプリ個別ではなく制御面の異常を疑う入口。
 
@@ -104,7 +104,7 @@ AWS Status は**読むだけ**。
 | 観察 | 寄せやすい層 |
 |------|----------------|
 | 単一アプリの例外ログ | アプリ |
-| Endpoints 空 | アプリ（マニフェスト） |
+| Endpoints 空 | アプリ（YAML設定） |
 | 多数 NS で ImagePull | レジストリ / 権限 / ネットワーク |
 | Router 全体死 | OpenShift |
 | `co` Degradation | OpenShift / ROSA |
@@ -112,7 +112,7 @@ AWS Status は**読むだけ**。
 
 ## 完了条件（DoD）
 
-- [ ] 5 シナリオで「最初の 3 手」とその目的を言える
-- [ ] 有料リソースを作っていない
+- [ ] 5 つの練習問題で「最初の 3 手」とその目的を言える
+- [ ] 有料のものを作っていない
 
 次: [09-personal-ops](../09-personal-ops/)

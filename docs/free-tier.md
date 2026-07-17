@@ -1,4 +1,4 @@
-# 無料枠ポリシー
+# 無料枠の方針
 
 この学習リポジトリでは、**課金が発生しうる操作を手順に含めません。**
 
@@ -8,8 +8,8 @@
 |------|--------|------|
 | ローカル PC / WSL | $0 | Linux・Docker・Minikube |
 | Docker Desktop（個人）または Colima / Podman | $0※ | コンテナ |
-| Minikube | $0 | Kubernetes ハンズオン・個人運用 |
-| [Developer Sandbox](https://developers.redhat.com/developer-sandbox) | $0（時間・Quota 制限あり） | OpenShift / `oc` / Route |
+| Minikube | $0 | Kubernetes 実習・個人運用 |
+| [Developer Sandbox](https://developers.redhat.com/developer-sandbox) | $0（時間・利用上限あり） | OpenShift / `oc` / Route |
 | AWS アカウント（無料利用枠） | 条件付き $0 | **閲覧中心**。作成は「料金 $0 が確認できる操作」のみ |
 | 公式ドキュメント | $0 | ROSA・AWS・OpenShift の概念 |
 
@@ -24,7 +24,7 @@
 | NAT Gateway / ALB / NLB の作成 | 時間課金 |
 | 常時起動の EC2 / RDS | 無料枠超過・消し忘れリスク |
 | 有料の OpenShift クラウドクラスタ | 有料 |
-| 「よく分からないが作ってみる」クラウドリソース | 請求事故の元 |
+| 「よく分からないが作ってみる」クラウドのもの | 請求事故の元 |
 
 ## ROSA をどう学ぶか（無料の代替）
 
@@ -32,8 +32,8 @@
 やりたいこと              無料での代替
 ─────────────────────────────────────────
 OpenShift 操作     →  Developer Sandbox
-責任分界・構成理解 →  AWS/Red Hat Docs + 08 シナリオ
-個人の定常運用     →  Minikube + Sandbox の週次ランブック（09）
+責任分界・構成理解 →  AWS/Red Hat Docs + 08 練習問題
+個人の定常運用     →  Minikube + Sandbox の毎週の手順書（09）
 実 ROSA 操作       →  会社の非本番（閲覧権限）があれば観察のみ
 ```
 
@@ -41,7 +41,7 @@ OpenShift 操作     →  Developer Sandbox
 
 ### やってよい（原則 $0）
 
-- Console で **既存の Default VPC / Subnet を見る**
+- 管理画面（Console）で **既存の Default VPC / Subnet を見る**
 - IAM のドキュメントを読む、**権限シミュレータ**を使う
 - Billing の「無料利用枠」画面で請求 $0 を確認する習慣
 - Cost Explorer / Bills で **請求が $0 であること**を定期確認
@@ -56,7 +56,7 @@ OpenShift 操作     →  Developer Sandbox
 
 ## Developer Sandbox の注意
 
-- 無料だが **有効期限・リソース Quota** あり
+- 無料だが **有効期限・ものの利用上限** あり
 - 期限切れ後は再申請や待機が必要な場合あり
 - クラスタ管理者権限はほぼ無い → SCC 変更などは「読む」まで
 

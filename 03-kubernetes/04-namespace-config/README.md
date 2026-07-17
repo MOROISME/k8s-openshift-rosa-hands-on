@@ -1,18 +1,18 @@
 # 04. Namespace / ConfigMap / Secret
 
-**この節の目的:** 論理仕切りと「設定をイメージに焼き込まない」やり方を体験する。
+**この節の目的:** 論理仕切りと「設定をコンテナのひな形に焼き込まない」やり方を体験する。
 
 ## 概要
 
-| リソース | 意味 | 目的 |
+| もの | 意味 | 目的 |
 |----------|------|------|
 | Namespace | クラスタ内の論理仕切り | チーム・環境（dev 等）の分離 |
 | ConfigMap | 非機密寄りの設定 | 環境変数や設定ファイルとして Pod に渡す |
 | Secret | 機密情報 | パスワード等（中身は Base64。暗号化とは限らない） |
 
-## マニフェスト解説（`../manifests/04-namespace-config.yaml`）
+## YAML設定の解説（`../manifests/04-namespace-config.yaml`）
 
-1 ファイルに複数リソースが `---` で並んでいます（まとめて apply できる）。
+1 ファイルに複数のものが `---` で並んでいます（まとめて apply できる）。
 
 ### 1) Namespace
 
@@ -91,7 +91,7 @@ spec:
 | フィールド | 意味 | 目的 |
 |------------|------|------|
 | `command` | 起動時に実行するコマンド | 渡された値を **echo（印刷）** して確認する |
-| `env[].valueFrom.configMapKeyRef` | ConfigMap から環境変数へ | イメージに設定を焼き込まない |
+| `env[].valueFrom.configMapKeyRef` | ConfigMap から環境変数へ | コンテナのひな形に設定を焼き込まない |
 | `env[].valueFrom.secretKeyRef` | Secret から環境変数へ | パスワードを別管理する |
 
 ### 「ログで見る」とは何か（ここが本題）
@@ -139,7 +139,7 @@ SECRET_SET=yes
 
 もし ConfigMap 参照が壊れていると、だいたい `MESSAGE=`（空）になります。
 
-## ハンズオン
+## 実習
 
 **作業ディレクトリ:** `03-kubernetes/04-namespace-config`
 

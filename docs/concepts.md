@@ -1,7 +1,8 @@
 # 概念メモ（用語・詳細説明）
 
-各 Step の README はハンズオン中心。長い説明はここに集約する。  
-無料枠の約束: [free-tier.md](./free-tier.md)
+各 Step の README は実習中心。長い説明はここに集約する。  
+無料枠の約束: [free-tier.md](./free-tier.md)  
+ことばの言い換え: [kotoba.md](./kotoba.md)
 
 ---
 
@@ -16,10 +17,10 @@ flowchart TD
 
 | レベル | 意味 | 無料での実現 |
 |--------|------|----------------|
-| L1 | デプロイできる | Minikube |
+| L1 | 配置して動かせる | Minikube |
 | L2 | 壊して直せる | Minikube |
 | L3 | OpenShift 差分を扱える | Developer Sandbox |
-| L4 | 週次で自分運用できる | Minikube + Sandbox + ランブック |
+| L4 | 週次で自分運用できる | Minikube + Sandbox + 毎週の手順書 |
 
 ROSA 実クラスタ作成は有料のため L4 の対象外。知識は Docs + 責任分界まで。
 
@@ -74,10 +75,10 @@ ROSA 実クラスタ作成は有料のため L4 の対象外。知識は Docs + 
 |------|------|
 | Project | Namespace + 権限など |
 | Route | 外部公開 |
-| BuildConfig / ImageStream | ビルド・イメージ参照 |
+| BuildConfig / ImageStream | ビルド・コンテナのひな形（イメージ）参照 |
 | DeploymentConfig | レガシー寄り |
 | SCC | Pod セキュリティ制約 |
-| Operator | 運用の自動化拡張 |
+| Operator | 運用を自動化する部品 |
 
 学習環境: **Developer Sandbox（無料・期限あり）**  
 有料 OCP / ROSA クラスタは教材手順に含めない。

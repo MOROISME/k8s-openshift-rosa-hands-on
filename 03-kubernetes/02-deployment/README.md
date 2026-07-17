@@ -3,7 +3,7 @@
 Deployment は「何台動かすか」「更新どうするか」を管理します。  
 **この節の目的:** Pod を直接ではなく Deployment 経由で扱い、スケールを体験する。
 
-## マニフェスト解説（`../manifests/02-deployment.yaml`）
+## YAML設定の解説（`../manifests/02-deployment.yaml`）
 
 ```yaml
 apiVersion: apps/v1
@@ -30,9 +30,9 @@ spec:
 | フィールド | 意味 | 目的 |
 |------------|------|------|
 | `kind: Deployment` | Deployment を作る | Pod を直接ではなく管理者経由で動かす |
-| `replicas: 2` | 希望台数 | 「同じ Pod を 2 つ」と宣言 |
-| `selector.matchLabels` | Deployment が管理する Pod の条件 | `app=hello` の Pod を自分の管轄にする |
-| `template.metadata.labels` | 作られる Pod に付くラベル | **selector と同じ eng_echoが必要**（ここが実体の印） |
+| `replicas: 2` | 複製の台数 | 「同じ Pod を 2 つ」と宣言 |
+| `selector.matchLabels` | Deployment が管理する Pod の探す条件 | `app=hello` の Pod を自分の管轄にする |
+| `template.metadata.labels` | 作られる Pod に付く付箋 | **探す条件と同じ付箋が必要**（ここが実体の印） |
 | `template.spec.containers` | Pod の中身の設計図 | 実際に起動するコンテナ定義 |
 
 関係のイメージ:
@@ -43,7 +43,7 @@ Deployment (hello-deploy)
   └── template（設計図）→ Pod × 2（どちらも labels: app=hello）
 ```
 
-## ハンズオン
+## 実習
 
 ```bash
 kubectl apply -f ../manifests/02-deployment.yaml
@@ -60,7 +60,7 @@ kubectl rollout status deploy/hello-deploy
 |----------|------|------|
 | `kubectl apply -f ...` | Deployment を作成/更新 | 「望ましい状態」を宣言する |
 | `kubectl get deploy` | Deployment 一覧 | READY（何台 Ready か）を見る |
-| `kubectl get pods -l app=hello` | ラベルで Pod を絞る | Deployment が作った Pod だけ見る。`-l` は label selector |
+| `kubectl get pods -l app=hello` | 付箋で Pod を絞る | Deployment が作った Pod だけ見る。`-l` は label selector |
 | `kubectl scale ... --replicas=3` | 希望台数を 3 に変更 | スケールアウトを体験 |
 | `kubectl rollout status ...` | 更新/スケールの完了待ち | 「終わるまで待つ」運用の型 |
 

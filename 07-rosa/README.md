@@ -1,23 +1,23 @@
 # 07. ROSA の基本（Docs のみ・クラスタ作成禁止）
 
 **この Step の目的:** ROSA が何か・誰が何を責任持つかを説明できるようにする。  
-**クラスタは作らない（有料）。** OpenShift 操作は Step 5 で済み。
+**計算機のまとまり（クラスタ）は作らない（有料）。** OpenShift 操作は Step 5 で済み。
 
-ポリシー: [docs/free-tier.md](../docs/free-tier.md)
+方針: [docs/free-tier.md](../docs/free-tier.md)
 
 | 学びたいこと | 無料でのやり方 | 目的 |
 |--------------|----------------|------|
 | OpenShift 操作 | Step 5 Sandbox | 手を動かす部分は済んでいる |
-| ROSA とは | 本 Step Docs | マネージドサービスの位置づけ |
+| ROSA とは | 本 Step Docs | 業者に運用を任せる形のサービスの位置づけ |
 | 責任分界 | 本 Step + Step 8 | 障害時にどこを疑うか |
 | 実クラスタ | 会社非本番の閲覧のみ（任意） | 実物の雰囲気（破壊禁止） |
 
 ## ROSA とは
 
-**Red Hat OpenShift Service on AWS** = AWS 上のマネージド OpenShift。
+**Red Hat OpenShift Service on AWS** = AWS 上で業者に運用を任せる OpenShift（運用代行型）。
 
 ```text
-Kubernetes → OpenShift → ROSA（AWS 上マネージド）
+Kubernetes → OpenShift → ROSA（AWS 上・運用代行型）
 ```
 
 ## 1. 責任分界 — なぜ学ぶか
@@ -26,8 +26,8 @@ Kubernetes → OpenShift → ROSA（AWS 上マネージド）
 
 | 層 | 見るもの（例） | 見る目的 |
 |----|----------------|----------|
-| アプリ | Pod、ログ、設定、Route 応答 | 自分たちのデプロイ起因か |
-| OpenShift / ROSA | `oc get co`、Operator、ノード、SCC | クラスタ基盤の劣化か |
+| アプリ | Pod、ログ、設定、Route 応答 | 自分たちが配置して動かした結果か |
+| OpenShift / ROSA | `oc get co`、運用を自動化する部品（Operator）、ノード、SCC | クラスタ基盤の劣化か |
 | AWS | VPC、IAM、LB、DNS | クラウド土台の問題か |
 
 ## 2. Classic と HCP — なぜ区別するか
@@ -45,16 +45,16 @@ Kubernetes → OpenShift → ROSA（AWS 上マネージド）
 - https://docs.aws.amazon.com/rosa/latest/userguide/what-is-rosa.html
 - https://www.redhat.com/en/technologies/cloud-computing/openshift/aws/learn
 
-## 3. Sandbox との対応 — なぜやるか
+## 3. 練習用の無料環境（Sandbox）との対応 — なぜやるか
 
 「ROSA を作れなくても、触った OpenShift 操作が本番 ROSA でも同じ道具」と接続するため。
 
 | Sandbox | ROSA での意味 |
 |---------|----------------|
 | Project / Deploy / Route | アプリ層。同じ |
-| `oc` / Console | 接続先が ROSA になるだけ |
+| `oc` / 管理画面 | 接続先が ROSA になるだけ |
 | SCC | 本番でも（より）重要 |
-| Operator | `co` とセットで健全性 |
+| 運用を自動化する部品（Operator） | `co` とセットで健全性 |
 
 ## 4. 任意: 会社クラスタ閲覧
 

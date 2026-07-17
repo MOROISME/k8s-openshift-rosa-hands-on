@@ -5,14 +5,14 @@ Pod は Kubernetes でコンテナを動かす**最小単位**です。
 
 ## 前提
 
-先に [../README.md](../README.md) の **ハンズオン A（環境構築）** を自分のターミナルで完了し、`kubectl get nodes` が Ready であること。
+先に [../README.md](../README.md) の **実習 A（環境構築）** を自分のターミナルで完了し、`kubectl get nodes` が Ready であること。
 
 ```bash
 kubectl get nodes
 # minikube   Ready   ...
 ```
 
-## マニフェスト解説（`../manifests/01-pod.yaml`）
+## YAML設定の解説（`../manifests/01-pod.yaml`）
 
 `kubectl apply -f` で渡す YAML は、「こういう Pod が欲しい」という**宣言書**です。
 
@@ -39,10 +39,10 @@ spec:
 | `metadata.labels` | 付箋（app=hello） | 後で Service などが探すための印 |
 | `spec.containers` | 中で動かすコンテナ一覧 | Pod は 1 つ以上のコンテナを持てる |
 | `containers[].name` | コンテナ名 | Pod 内での識別 |
-| `containers[].image` | 使うイメージ | Docker のときと同じ `nginx:alpine` |
+| `containers[].image` | 使うコンテナのひな形 | Docker のときと同じ `nginx:alpine` |
 | `containerPort: 80` | コンテナが聞くポートの申告 | 情報・ドキュメント用（公開そのものではない） |
 
-## ハンズオン
+## 実習
 
 **作業ディレクトリ:** 先に `03-kubernetes/01-pod` へ移動する（`02-docker/exercises` など別フォルダでは相対パスが解決しない）。
 
@@ -72,7 +72,7 @@ kubectl apply -f 03-kubernetes/manifests/01-pod.yaml
 
 ### 任意: 対話型でコンテナの中に入る（`kubectl exec -it`）
 
-**目的:** Pod の中を Linux シェルのように覗き、障害切り分けや「中身の確認」をする。
+**目的:** Pod の中を Linux シェルのように覗き、障害の切り分けや「中身の確認」をする。
 
 #### 「中」とはどこか（入れ子のイメージ）
 
@@ -115,7 +115,7 @@ kubectl exec -it hello-pod -- /bin/sh
 | `-it` | 上の 2 つセット | **対話型セッション**にする定番 |
 | `hello-pod` | 対象 Pod | 入る先 |
 | `--` | 区切り | 以降は「Pod の中で実行するコマンド」 |
-| `/bin/sh` | シェルを起動 | bash が無いイメージ（alpine 等）でも使えることが多い |
+| `/bin/sh` | シェルを起動 | bash が無いコンテナのひな形（alpine 等）でも使えることが多い |
 
 プロンプトが変わったら **コンテナの中**にいます。抜けるときは:
 
@@ -149,7 +149,7 @@ kubectl exec hello-pod -- ps aux
 
 | 形 | 用途 |
 |----|------|
-| `kubectl exec -it POD -- /bin/sh` | 中を manifest に歩き回って調べる（対話） |
+| `kubectl exec -it POD -- /bin/sh` | 中を YAML設定に沿って歩き回って調べる（対話） |
 | `kubectl exec POD -- コマンド` | 確認したいことだけ実行してすぐ終わる |
 
 #### できないこと・注意
@@ -158,10 +158,10 @@ kubectl exec hello-pod -- ps aux
 |------|------|
 | 本番で常用しない | 中を直接いじると「宣言（YAML）と実体」がずれる |
 | 永続しない変更が多い | コンテナ再作成で中の手動変更は消えることが多い |
-| シェルが無いイメージもある | その場合は `exec` できない。別のデバッグ用イメージを使う |
+| シェルが無いコンテナのひな形もある | その場合は `exec` できない。別のデバッグ用のひな形を使う |
 | 権限で拒否されることがある | RBAC / SCC（OpenShift）で制限されている |
 
-覚える一言: **対話型 `exec` は「中を見て確かめる」ための道具。恒久対応はマニフェスト側で行う。**
+覚える一言: **対話型 `exec` は「中を見て確かめる」ための道具。恒久対応は YAML設定側で行う。**
 
 片付け:
 
@@ -171,7 +171,7 @@ kubectl delete -f ../manifests/01-pod.yaml
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `kubectl delete -f ...` | YAML で定義したリソースを削除 | 学習用リソースを残さない |
+| `kubectl delete -f ...` | YAML設定で定義したものを削除 | 学習用のものを残さない |
 
 ## 期待結果
 
@@ -188,7 +188,7 @@ hello-pod   1/1     Running   0          ...
 - 本番で Pod を直接作り続けることは少ない（Deployment 経由が基本）
 - まずは「1 個動いている」を掴む
 
-## トラブル時
+## うまくいかないとき
 
 | 症状 | 対処 |
 |------|------|

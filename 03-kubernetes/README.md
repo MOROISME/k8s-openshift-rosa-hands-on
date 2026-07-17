@@ -4,7 +4,7 @@
 
 費用: **すべて無料**（ローカルのみ。クラウドの有料 K8s は使わない）。
 
-> **進め方:** 下のハンズオンは **自分のターミナルで順番に実行**してください。  
+> **進め方:** 下の実習は **自分のターミナルで順番に実行**してください。  
 > インストール・クラスタ起動も学習の一部です（代理実行せず、手順どおりに実施する）。
 
 ---
@@ -44,7 +44,7 @@ Minikube は学習用なので **マシンは実質 1 台**ですが、操作の
 
 ---
 
-## ハンズオン A: 環境構築（インストール〜クラスタ起動）
+## 実習 A: 環境構築（インストール〜クラスタ起動）
 
 ### A-0. 全体の流れ
 
@@ -53,12 +53,12 @@ Minikube は学習用なので **マシンは実質 1 台**ですが、操作の
 2. Homebrew で minikube / kubectl を入れる
 3. minikube start でクラスタを起動する
 4. kubectl get nodes で Ready を確認する
-5. ハンズオン B（01-pod 以降）へ進む
+5. 実習 B（01-pod 以降）へ進む
 ```
 
 ### A-1. Docker Desktop（前提）
 
-Minikube（docker ドライバ）は、裏で Docker を使います。
+Minikube（docker 動かしかた）は、裏で Docker を使います。
 
 1. 未導入なら [Docker Desktop](https://www.docker.com/products/docker-desktop/) をインストール
 2. Docker Desktop を起動し、メニューバーのアイコンが安定するまで待つ
@@ -97,7 +97,7 @@ Homebrew が無い場合の公式インストール例:
 
 ### A-3. minikube / kubectl のインストール
 
-**ここを自分で実行する（ハンズオン本体）。**
+**ここを自分で実行する（実習本体）。**
 
 ```bash
 brew install minikube
@@ -140,10 +140,10 @@ minikube start --driver=docker
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `minikube start` | ローカルに K8s を 1 クラスタ作って起動 | ハンズオン用環境を用意する |
+| `minikube start` | ローカルに K8s を 1 クラスタ作って起動 | 実習用環境を用意する |
 | `--driver=docker` | Docker Desktop 上で動かす | この教材の推奨 |
 
-初回はベースイメージのダウンロードで **数分**かかることがあります。  
+初回はコンテナのひな形のダウンロードで **数分**かかることがあります。  
 `Done! kubectl is now configured to use "minikube"` の趣旨が出れば起動成功。
 
 続けて確認:
@@ -178,7 +178,7 @@ kubectl config use-context minikube
 - [ ] `kubectl get nodes` が **Ready**
 - [ ] context が `minikube`
 
-**ここまでできたら** → [01-pod](./01-pod/) へ（ハンズオン B）。
+**ここまでできたら** → [01-pod](./01-pod/) へ（実習 B）。
 
 ### A-5. 日常の起動・停止（参考）
 
@@ -186,7 +186,7 @@ kubectl config use-context minikube
 |--------------|----------|------|
 | 起動 | `minikube start` | 学習再開 |
 | 状態 | `minikube status` | 確認 |
-| 停止（残す） | `minikube stop` | リソースを空けつつ定義は残す |
+| 停止（残す） | `minikube stop` | 資源を空けつつ定義は残す |
 | 削除（作り直し） | `minikube delete` | 壊れたとき・最初から |
 
 ---
@@ -195,13 +195,13 @@ kubectl config use-context minikube
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `kubectl apply -f FILE` | マニフェストを適用 | リソース作成・更新 |
+| `kubectl apply -f FILE` | YAML設定を適用 | ものの作成・更新 |
 | `kubectl get TYPE` | 一覧 | 状態の一次確認 |
 | `kubectl describe TYPE NAME` | 詳細 + Events | 障害の理由を読む |
 | `kubectl logs ...` | コンテナログ | アプリの出力を見る |
-| `kubectl delete -f FILE` | マニフェスト削除 | 片付け |
+| `kubectl delete -f FILE` | YAML設定削除 | 片付け |
 
-**マニフェストのパス**は、今いるディレクトリ基準です。
+**YAML設定のパス**は、今いるディレクトリ基準です。
 
 ```bash
 # 例: リポジトリルートから
@@ -221,12 +221,12 @@ kubectl apply -f ../manifests/01-pod.yaml
 | Deployment | 台数・更新の管理 | 本番で普段触るもの |
 | Service | 安定したアクセス口 | Pod が入れ替わっても届ける |
 | Namespace | 論理仕切り | 環境・チーム分離 |
-| ConfigMap / Secret | 設定・機密 | イメージに焼き込まない設定 |
+| ConfigMap / Secret | 設定・機密 | コンテナのひな形に焼き込まない設定 |
 | Ingress | 外部 HTTP 入り口 | OpenShift では Route に相当 |
 
-## 学習順（ハンズオン B）
+## 学習順（実習 B）
 
-**ハンズオン A（環境構築）が終わってから:**
+**実習 A（環境構築）が終わってから:**
 
 1. [01-pod](./01-pod/) … 1 個動かす
 2. [02-deployment](./02-deployment/) … 台数管理
@@ -234,13 +234,13 @@ kubectl apply -f ../manifests/01-pod.yaml
 4. [04-namespace-config](./04-namespace-config/) … 仕切りと設定
 5. [05-ingress](./05-ingress/)（任意）… HTTP 入り口
 
-マニフェスト: [manifests/](./manifests/)  
+YAML設定: [manifests/](./manifests/)  
 公式: https://kubernetes.io/ja/docs/tutorials/  
 Minikube 公式: https://minikube.sigs.k8s.io/docs/start/
 
 ---
 
-## トラブル時（インストール〜起動）
+## うまくいかないとき（インストール〜起動）
 
 | 症状 | 原因の目安 | 対処 |
 |------|------------|------|
@@ -254,7 +254,7 @@ Minikube 公式: https://minikube.sigs.k8s.io/docs/start/
 
 ---
 
-## セットアップの完了条件（DoD）＝ ハンズオン A
+## セットアップの完了条件（DoD）＝ 実習 A
 
 - [ ] `docker version` で Server が見える
 - [ ] **自分で** `brew install minikube`（と必要なら kubectl）を実行した
@@ -270,4 +270,4 @@ Minikube 公式: https://minikube.sigs.k8s.io/docs/start/
 - [ ] `apply` / `get` / `describe` / `logs` / `delete` が使える
 - [ ] Service まで公開できた（Ingress は任意）
 
-次: [04-kubernetes-ops](../04-kubernetes-ops/)（章のハンズオン完了後）
+次: [04-kubernetes-ops](../04-kubernetes-ops/)（章の実習完了後）

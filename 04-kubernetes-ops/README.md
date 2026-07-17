@@ -11,10 +11,10 @@
 ## 学習順
 
 1. [01-troubleshooting](./01-troubleshooting/) … 典型障害 3 種
-2. [02-probes-resources](./02-probes-resources/) … 健康診断とリソース
+2. [02-probes-resources](./02-probes-resources/) … 健康診断と CPU/メモリの枠
 3. [03-storage-rbac](./03-storage-rbac/) … ディスクと権限
 
-マニフェスト: [manifests/](./manifests/)
+YAML設定: [manifests/](./manifests/)
 
 ## 切り分けの基本手順（暗記）
 
@@ -24,7 +24,7 @@
 | 2 | `kubectl describe pod <name>` | Events で「クラスタが何と言っているか」を読む |
 | 3 | `kubectl logs <name>` | アプリ自身の出力を見る |
 | 4 | `kubectl get events --sort-by='.lastTimestamp'` | 時系列で周辺イベントを追う |
-| 5 | Service / ラベル / ポート | ネットワーク経路の不一致を疑う |
+| 5 | Service / 付箋 / ポート | ネットワーク経路の不一致を疑う |
 
 ## NetworkPolicy（概要のみ）
 

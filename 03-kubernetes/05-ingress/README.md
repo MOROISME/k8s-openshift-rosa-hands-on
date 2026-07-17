@@ -1,11 +1,11 @@
 # 05. Ingress（任意）
 
-Ingress はクラスタ外からの HTTP(S) 入り口です。OpenShift では **Route** が多いです。  
+Ingress（HTTPの入り口）はクラスタ外からの HTTP(S) 入り口です。OpenShift では **Route** が多いです。  
 **この節の目的:** 「Service の前に HTTP ルーティング層がある」ことを知る（環境差あり・任意）。
 
 飛ばして Step 4 に進んでも L4 は達成可能です。
 
-## マニフェスト解説（`../manifests/05-ingress.yaml`）
+## YAML設定の解説（`../manifests/05-ingress.yaml`）
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -59,7 +59,7 @@ Ingress の `host: hello.local` は、次の意味です:
 | 現実のホテル | Ingress |
 |--------------|---------|
 | フロントの受付 | Ingress Controller |
-| 「○○ホテル宛て」の荷物ラベル | `Host` ヘッダー（例: `hello.local`） |
+| 「○○ホテル宛て」の荷物の付箋 | `Host` ヘッダー（例: `hello.local`） |
 | 部屋番号の対応表 | Ingress の `rules` |
 | 実際の部屋 | Service → Pod |
 
@@ -80,13 +80,13 @@ Ingress の `host: hello.local` は、次の意味です:
 2. 自分の Mac が `hello.local` を **どの IP に向けるか** は別問題（名前解決）  
 3. 名前解決ができて初めて、ブラウザで `http://hello.local/` が Ingress に届く  
 
-名前解決ができていないと、「Ingress リソースはあるのにブラウザで開けない」が起きます。  
-さらに **macOS + Minikube（Docker ドライバ）** では、名前解決だけでは足りません（次節）。
+名前解決ができていないと、「Ingress オブジェクトはあるのにブラウザで開けない」が起きます。  
+さらに **macOS + Minikube（Docker 動かしかた）** では、名前解決だけでは足りません（次節）。
 
 学習で Host を付ける例:
 
 ```bash
-# tunnel 後はだいたい 127.0.0.1（後述）。ADDRESS 列の 192.168.x.x を直接叩いても Mac からは届かないことが多い
+# 橋渡し後はだいたい 127.0.0.1（後述）。ADDRESS 列の 192.168.x.x を直接叩いても Mac からは届かないことが多い
 curl -H "Host: hello.local" http://127.0.0.1/
 ```
 
@@ -108,10 +108,10 @@ Pod（app=hello）
 
 前提として、先に Deployment と Service（`02` / `03`）があること。Ingress だけではアプリは動きません。
 
-## ハンズオン
+## 実習
 
 **この節の必須ゴールは「Ingress オブジェクトがあること」です。**  
-`http://hello.local/` をブラウザで開くのは **任意**（macOS Docker ドライバでは一手間必要）。
+`http://hello.local/` をブラウザで開くのは **任意**（macOS Docker 動かしかたでは一手間必要）。
 
 ```bash
 minikube addons enable ingress
@@ -141,8 +141,8 @@ kubectl get ingress
 | 名前解決がない | Mac が `hello.local` → どの IP？ を知らない | サイトに接続できない / DNS エラー |
 | 届く道がない | ADDRESS（例: `192.168.49.2`）は Docker の中の IP。Mac から直接届かない | hosts を書いてもタイムアウト |
 
-Service 演習のときと同じく、macOS + Docker ドライバでは **トンネル（橋渡し）** が必要です。  
-addon 有効化時のメッセージどおり:
+Service 演習のときと同じく、macOS + Docker 動かしかたでは **橋渡し** が必要です。  
+追加機能有効化時のメッセージどおり:
 
 > run `minikube tunnel` … available at `127.0.0.1`
 
@@ -158,7 +158,7 @@ minikube tunnel
 
 ```bash
 # 名前解決（1 回書けばよい。管理者権限が必要）
-# 127.0.0.1 は tunnel が Mac 側に出す入口
+# 127.0.0.1 は橋渡しが Mac 側に出す入口
 echo '127.0.0.1 hello.local' | sudo tee -a /etc/hosts
 
 # 確認（Host ヘッダー付き）
@@ -171,17 +171,17 @@ curl -I -H "Host: hello.local" http://127.0.0.1/
 | ステップ | 意味 | 目的 |
 |----------|------|------|
 | `minikube tunnel` | Mac ↔ クラスタ内 Ingress の橋 | `127.0.0.1:80` で Ingress に届くようにする |
-| `/etc/hosts` に `127.0.0.1 hello.local` | 名前 → 127.0.0.1 | ブラウザが `hello.local` を tunnel 入口に向ける |
+| `/etc/hosts` に `127.0.0.1 hello.local` | 名前 → 127.0.0.1 | ブラウザが `hello.local` を橋渡し入口に向ける |
 | `curl -H "Host: hello.local"` | Host 条件を明示 | Ingress の `host: hello.local` ルールに載せる |
 
-トンネルを止めると再び開けなくなります（Service の `minikube service --url` と同じ考え方）。
+橋渡しを止めると再び開けなくなります（Service の `minikube service --url` と同じ考え方）。
 
 **この節をパスしてよい条件:** `kubectl get ingress` で `HOSTS=hello.local` が見え、「Host で振り分ける層がある」と説明できれば OK。ブラウザ到達は必須ではありません。
 
 片付け:
 
 ```bash
-# tunnel を動かしているターミナルがあれば Ctrl+C で止める
+# 橋渡しを動かしているターミナルがあれば Ctrl+C で止める
 
 kubectl delete -f ../manifests/05-ingress.yaml
 kubectl delete -f ../manifests/03-service.yaml
@@ -190,13 +190,13 @@ kubectl delete -f ../manifests/02-deployment.yaml
 
 ## 期待結果
 
-- **必須:** `kubectl get ingress` にリソースが出る（HOSTS に `hello.local`）
+- **必須:** `kubectl get ingress` に Ingress が出る（HOSTS に `hello.local`）
 - **任意:** `minikube tunnel` + hosts（または curl の Host ヘッダー）で nginx の応答が返る
 
 ## 完了条件（DoD）
 
 - [ ] `hello.local` は仮のホスト名で、Ingress の振り分け条件だと説明できる
 - [ ] ホスト名（Host）と IP（ADDRESS）の違いを言える
-- [ ] macOS でブラウザが開けない主因（名前解決 / tunnel）をざっくり言える
+- [ ] macOS でブラウザが開けない主因（名前解決 / 橋渡し）をざっくり言える
 - [ ] Ingress と Service / Deployment の関係を説明できる
 - [ ] 「OpenShift では Route」と覚えている

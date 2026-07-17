@@ -1,34 +1,34 @@
 # 05. OpenShift の基本（Developer Sandbox・無料）
 
-**この Step の目的:** Kubernetes との差分（Project / Route / SCC / Operator）を、無料 Sandbox で体験する。  
+**この Step の目的:** Kubernetes との差分（Project / Route / SCC / Operator）を、練習用の無料環境（Developer Sandbox）で体験する。  
 有料の OpenShift / ROSA クラスタは使いません。
 
-ポリシー: [docs/free-tier.md](../docs/free-tier.md)
+方針: [docs/free-tier.md](../docs/free-tier.md)
 
 ## 前提（Developer Sandbox）
 
 有料クラスタは作らない。[docs/free-tier.md](../docs/free-tier.md)
 
-### 1. Console を開く
+### 1. 管理画面を開く
 
 1. [https://developers.redhat.com/developer-sandbox](https://developers.redhat.com/developer-sandbox) を開く
 2. Red Hat アカウントでログイン（無ければ無料登録。SMS 確認が出ることがある）
 3. **Try Red Hat products** のカード一覧で、**OpenShift** の **Try it** を押す
   （AI / Ansible など他カードは使わない）
-4. **DevSandbox** / 同意が出たら進み、**Web Console** を開く
+4. **DevSandbox** / 同意が出たら進み、**Web Console**（OpenShift の管理画面）を開く
 
 成功の目安: URL が `console-openshift-console.apps....`、Project（例: `xxxxx-dev`）が **Active**。
 
 
 | 補足               |                               |
 | ---------------- | ----------------------------- |
-| 右上の端末アイコン        | Console 内蔵の Web Terminal（任意）  |
+| 右上の端末アイコン        | 管理画面内蔵の Web Terminal（任意）  |
 | この教材の YAML apply | **Mac のターミナル + `oc`** を推奨（次へ） |
 
 
 ### 2. Mac に `oc` を入れる
 
-Console 右上 `**?` → Command Line Tools** から macOS 用を取得。  
+管理画面右上の **`?` → Command Line Tools** から macOS 用を取得。  
 `uname -m` が `arm64` → Apple Silicon、`x86_64` → Intel。
 
 展開して出てきた `oc` を使う（ダブルクリックで開くアプリではない）。
@@ -60,7 +60,7 @@ oc version --client
 
 ### 3. Mac で `oc login`
 
-1. Console（Project が見える画面）右上のユーザー名 → **Copy login command**
+1. 管理画面（Project が見える画面）右上のユーザー名 → **Copy login command**
   （または `?` → Command Line Tools → Copy login command）
 2. **Display Token** → `oc login --token=... --server=...` をコピー
 3. **Mac のターミナル**に貼り付けて実行
@@ -71,30 +71,30 @@ oc whoami
 oc project
 ```
 
-トークンは秘密情報。Web Terminal と Mac は別セッション。`kubectl`（Minikube）と混同しない。
+一時の通行証（トークン）は秘密情報。Web Terminal と Mac は別セッション。`kubectl`（Minikube）と混同しない。
 
 ## A. 概念チェック
 
 - [ ] Project ≈ Namespace + 権限
 - [ ] Route ≈ Ingress
-- [ ] DeploymentConfig はレガシー寄り
+- [ ] DeploymentConfig は古い型寄り
 - [ ] SCC が Pod 権限を制限
-- [ ] Operator が運用機能を担う
+- [ ] 運用を自動化する部品（Operator）が運用機能を担う
 
-## B. Web Console ハンズオン
+## B. 管理画面での実習
 
 **目的:** GUI でも同じオブジェクト（Pod / Route / ログ）を追えるようにする。
 
 1. Project を確認
-2. カタログまたは YAML でデプロイ
+2. カタログまたは YAML で配置して動かす
 3. Route URL を開く
 4. Pod ログを見る
 
-## C. YAML ハンズオン
+## C. YAML 実習
 
 **目的:** 制限付き SCC でも動く非特権アプリを、Deployment → Service → Route で公開する。
 
-### マニフェスト解説
+### YAML設定の解説
 
 #### 1) Deployment（`manifests/app-deployment.yaml`）
 
@@ -143,7 +143,7 @@ spec:
 
 | フィールド                 | 意味         | 目的                                     |
 | --------------------- | ---------- | -------------------------------------- |
-| `selector.app`        | Pod のラベル条件 | Deployment が付ける `app: sandbox-web` と一致 |
+| `selector.app`        | Pod の付箋（ラベル）条件 | Deployment が付ける `app: sandbox-web` と一致 |
 | `port` / `targetPort` | 窓口 → コンテナ  | どちらも 8080（非特権）                         |
 | `ports[].name: http`  | ポート名       | Route から `targetPort: http` で参照する      |
 
@@ -200,11 +200,11 @@ oc get route
 
 | コマンド                        | 意味               | 目的                         |
 | --------------------------- | ---------------- | -------------------------- |
-| `oc project`                | 現在 Project 表示/切替 | 間違った Project にデプロイしない      |
+| `oc project`                | 現在 Project 表示/切替 | 間違った Project に配置して動かさない      |
 | `oc apply -f ...deployment` | アプリ本体            | Pod を Deployment で管理       |
 | `oc apply -f ...service`    | クラスタ内入口          | Pod への安定アクセス               |
 | `oc apply -f ...route`      | 外部 URL           | OpenShift 流の公開（Ingress 相当） |
-| `oc get pods/svc/route`     | 各リソース確認          | Running と HOST を見る         |
+| `oc get pods/svc/route`     | 各種のもの確認          | Running と HOST を見る         |
 
 
 ```bash
@@ -265,7 +265,7 @@ oc get scc 2>/dev/null || echo "SCC list not permitted (expected on Sandbox)"
 - RBAC = API を叩けるか  
 - SCC = Pod がホストに対してどこまでできるか
 
-## F. Operator（観察）
+## F. 運用を自動化する部品（Operator）（観察）
 
 ```bash
 # まず素で実行（権限エラーが出ることが多い）
@@ -293,7 +293,7 @@ Sandbox では取れない／空に見えるのが普通です。
 
 ## 片付け（D〜F が終わってから）
 
-C でデプロイしたアプリが残っている前提で D をやったあと、最後に消す。
+C で配置して動かしたアプリが残っている前提で D をやったあと、最後に消す。
 
 ```bash
 cd 05-openshift
@@ -305,9 +305,9 @@ oc delete -f manifests/app-deployment.yaml
 
 | コマンド | 目的 |
 |----------|------|
-| `oc delete -f ...` | 学習用リソースを残さない（Route → Service → Deployment の順でも可） |
+| `oc delete -f ...` | 学習用のものを残さない（Route → Service → Deployment の順でも可） |
 
-## トラブル時
+## うまくいかないとき
 
 
 | 症状          | 対処                            |
@@ -315,7 +315,7 @@ oc delete -f manifests/app-deployment.yaml
 | 期限切れ        | 再申請。その間は Minikube             |
 | 権限系で Pod 失敗 | このリポジトリの非特権 YAML を使う          |
 | Route 無し    | apply 漏れ・Service 名不一致         |
-| login 失敗    | Console から login command 再コピー |
+| login 失敗    | 管理画面から login command 再コピー |
 
 
 ## 完了条件（DoD）

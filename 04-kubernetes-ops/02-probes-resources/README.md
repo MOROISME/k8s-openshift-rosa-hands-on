@@ -9,7 +9,7 @@
 | requests | 予約量 | スケジューラがノードに載せられるか判断 |
 | limits | 上限 | 食い過ぎを防ぐ（暴走抑制） |
 
-## マニフェスト解説（`../manifests/probes-resources.yaml`）
+## YAML設定の解説（`../manifests/probes-resources.yaml`）
 
 ```yaml
 containers:
@@ -49,7 +49,7 @@ containers:
 
 `50m` = CPU の 0.05 コア相当。単位の細かい暗記より、「予約」と「上限」の違いが大事です。
 
-## ハンズオン
+## 実習
 
 ```bash
 kubectl apply -f ../manifests/probes-resources.yaml

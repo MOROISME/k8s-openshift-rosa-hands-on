@@ -1,29 +1,29 @@
-# 01. トラブルシュート（壊して直す）
+# 01. 障害の切り分け（壊して直す）
 
 **この節の目的:** わざと壊した状態を観察し、現場と同じ順（get → describe → logs）で直す。
 
-共通オプション:
+共通の追加指定:
 
-| オプション | 意味 | 目的 |
+| 追加の指定 | 意味 | 目的 |
 |------------|------|------|
-| `-l app=...` | ラベルで絞る | 関係ない Pod を見ない |
-| `-f FILE` | マニフェスト指定 | 作成・削除の対象を YAML で揃える |
+| `-l app=...` | 付箋で絞る | 関係ない Pod を見ない |
+| `-f FILE` | YAML設定指定 | 作成・削除の対象を YAML で揃える |
 | `--ignore-not-found` | 無くてもエラーにしない | 片付けを安全に繰り返す |
 
 ---
 
-## シナリオ A: ImagePullBackOff
+## 練習問題 A: ImagePullBackOff
 
-**目的:** 「イメージが取れない」障害の見た目と直し方を覚える。
+**目的:** 「コンテナのひな形が取れない」障害の見た目と直し方を覚える。
 
-### マニフェスト解説
+### YAML設定の解説
 
 **壊れた版**（`../manifests/broken-imagepull.yaml`）:
 
 ```yaml
 containers:
   - name: web
-    # わざと存在しないイメージ
+    # わざと存在しないコンテナのひな形
     image: nginx:this-tag-does-not-exist-12345
 ```
 
@@ -39,11 +39,11 @@ image: nginx:alpine
 
 | 差分 | 意味 | 目的 |
 |------|------|------|
-| 正しいイメージ名 | レジストリから取れる | Running に戻す |
+| 正しいコンテナのひな形名 | レジストリから取れる | Running に戻す |
 
 現場でも「YAML の `image` が間違っていないか」は最初に疑うポイントです。
 
-### ハンズオン
+### 実習
 
 ```bash
 kubectl apply -f ../manifests/broken-imagepull.yaml
@@ -71,7 +71,7 @@ kubectl get pods -l app=broken-pull
 
 | コマンド | 目的 |
 |----------|------|
-| `apply` fixed | 正しいイメージ名に直して再宣言 |
+| `apply` fixed | 正しいコンテナのひな形名に直して再宣言 |
 | `get pods` | Running に戻ったか確認 |
 
 ```bash
@@ -81,11 +81,11 @@ kubectl delete -f ../manifests/fixed-imagepull.yaml
 
 ---
 
-## シナリオ B: CrashLoopBackOff
+## 練習問題 B: CrashLoopBackOff
 
 **目的:** 「起動してもすぐ落ちる」障害をログで特定する。
 
-### マニフェスト解説
+### YAML設定の解説
 
 **壊れた版**（`../manifests/broken-crashloop.yaml`）:
 
@@ -99,7 +99,7 @@ containers:
 
 | フィールド | 意味 | 目的（この演習） |
 |------------|------|------------------|
-| `command` | コンテナ起動時のコマンド | イメージ自体は正しい |
+| `command` | コンテナ起動時のコマンド | コンテナのひな形自体は正しい |
 | `exit 1` | 異常終了 | すぐ落ちて `CrashLoopBackOff` になる |
 
 **直した版**（`../manifests/fixed-crashloop.yaml`）:
@@ -112,9 +112,9 @@ command: ["sh", "-c", "echo ok: staying up; sleep 3600"]
 |------|------|------|
 | `sleep 3600` | 落ちずに居座る | Running を維持する |
 
-イメージ pull は成功するのに CrashLoop なら、**ログ（アプリの落ち方）** を見ます。
+コンテナのひな形 pull は成功するのに CrashLoop なら、**ログ（アプリの落ち方）** を見ます。
 
-### ハンズオン
+### 実習
 
 ```bash
 kubectl apply -f ../manifests/broken-crashloop.yaml
@@ -145,11 +145,11 @@ kubectl delete -f ../manifests/fixed-crashloop.yaml
 
 ---
 
-## シナリオ C: Service に届かない
+## 練習問題 C: Service に届かない
 
-**目的:** Pod は生きているのに届かない＝経路（ラベル）問題を Endpoints で見抜く。
+**目的:** Pod は生きているのに届かない＝経路（付箋）問題を Endpoints で見抜く。
 
-### マニフェスト解説
+### YAML設定の解説
 
 1 ファイルに Deployment + Service（`---` 区切り）。
 
@@ -183,9 +183,9 @@ selector:
 
 | 差分 | 意味 | 目的 |
 |------|------|------|
-| selector を Pod ラベルに合わせる | 名簿に載る | curl が届く |
+| selector を Pod 付箋に合わせる | 届け先一覧に載る | curl が届く |
 
-### ハンズオン
+### 実習
 
 ```bash
 kubectl apply -f ../manifests/broken-service.yaml
@@ -220,6 +220,6 @@ kubectl delete -f ../manifests/broken-service.yaml --ignore-not-found
 
 ## 完了条件（DoD）
 
-- [ ] 3 シナリオとも「壊れた状態」を観察してから直した
-- [ ] 各シナリオで「YAML のどこが原因か」を説明できる
+- [ ] 3 つの練習問題とも「壊れた状態」を観察してから直した
+- [ ] 各練習問題で「YAML のどこが原因か」を説明できる
 - [ ] 各コマンドを打つ目的を説明できる

@@ -13,7 +13,7 @@ Deployment で動いている Pod には、それぞれ一時的な IP があり
 
 - 落ちて作り直された
 - `scale` で台数が変わった
-- イメージ更新で新しい Pod に差し替わった
+- コンテナのひな形更新で新しい Pod に差し替わった
 
 入れ替わると **IP も変わります**。  
 「さっきの IP に curl」では、もう届かないことがあります。
@@ -21,7 +21,7 @@ Deployment で動いている Pod には、それぞれ一時的な IP があり
 ```text
 （悪い例）
 あなた → Pod の IP（例: 10.244.0.7）に直接アクセス
-              ↓ Pod が作り直される
+              ↓ Pod が作り替わされる
          新しい IP（例: 10.244.0.12）
               ↓
          古い IP はもう使えない → 接続失敗
@@ -42,7 +42,7 @@ Deployment で動いている Pod には、それぞれ一時的な IP があり
 |--------|------------|
 | お店の代表電話 | Service |
 | その日いる店員さん | Pod（入れ替わる） |
-| 「今いる店員」の名簿 | Endpoints |
+| 「今いる店員」の名簿 | Endpoints（届け先一覧） |
 
 店員（Pod）が交代しても、代表電話（Service）は同じ。  
 電話をかければ、今いる店員につながる、というイメージです。
@@ -50,7 +50,7 @@ Deployment で動いている Pod には、それぞれ一時的な IP があり
 ### Service と Pod の関係（いちばん大事）
 
 よくある誤解: 「Service の中に Pod が入っている」  
-**実際:** Service と Pod は別物。Service は **ラベル条件で Pod を探してつなぐだけ**。
+**実際:** Service と Pod は別物。Service は **付箋の条件で Pod を探してつなぐだけ**。
 
 ```text
 【作る側】
@@ -73,7 +73,7 @@ Service (hello-svc)
 
 ```text
 curl（Mac）
-  → minikube のトンネル
+  → minikube の橋渡し
     → Service（受付窓口）
       → Endpoints に載っているどれか 1 つの Pod
         → その中の nginx
@@ -88,14 +88,14 @@ curl（Mac）
 つまり関係は親子ではなく、
 
 - Deployment → Pod を **産む**
-- Service → ラベルで Pod を **見つける・届ける**
+- Service → 付箋で Pod を **見つける・届ける**
 
 です。Pod が 0 個なら Service はあっても応答できません（窓口だけあって店員がいない状態）。
 
 #### 自分の目で関係を確認する
 
 ```bash
-# Pod（実体）とラベル
+# Pod（実体）と付箋
 kubectl get pods -l app=hello --show-labels
 
 # Service（窓口）の selector
@@ -109,11 +109,11 @@ kubectl get endpoints hello-svc
 
 ### どうやって「どの Pod？」を決めるか
 
-Service は **ラベル** で対象を選びます（電話帳の条件検索に近い）。
+Service は **付箋** で対象を選びます（電話帳の条件検索に近い）。
 
 この教材では:
 
-| リソース | ラベル |
+| もの | 付箋 |
 |----------|--------|
 | Deployment が作る Pod | `app: hello` |
 | Service の selector | `app: hello` |
@@ -121,7 +121,7 @@ Service は **ラベル** で対象を選びます（電話帳の条件検索に
 両方の `app: hello` が一致しているので、Service は「hello の Pod」に届けます。  
 ここがずれると、窓口はあるのに後ろに誰もいない（Endpoints が空）になります。
 
-### マニフェスト解説（`../manifests/03-service.yaml`）
+### YAML設定の解説（`../manifests/03-service.yaml`）
 
 ```yaml
 apiVersion: v1
@@ -142,11 +142,11 @@ spec:
 |------------|------|------|
 | `kind: Service` | Service を作る | 固定の受付窓口 |
 | `metadata.name` | 窓口の名前 | `hello-svc` で参照する |
-| `selector.app: hello` | 届け先 Pod の条件 | **Pod の labels** と一致させる（Deployment 本体ではなく Pod） |
+| `selector.app: hello` | 届け先 Pod の探す条件 | **Pod の labels** と一致させる（Deployment 本体ではなく Pod） |
 | `type: NodePort` | 公開の種類 | 学習用に外から届きやすくする |
 | `port` | Service の受付ポート | 窓口の番号 |
 | `targetPort` | Pod（コンテナ）側ポート | 奥の nginx が聞いている番号 |
-| `nodePort` | ノード側のポート | Minikube 等から入るときの番号（環境によりトンネル経由になる） |
+| `nodePort` | ノード側のポート | Minikube 等から入るときの番号（環境により橋渡し経由になる） |
 
 ポートの噛み砕き:
 
@@ -161,16 +161,16 @@ spec:
 
 ### Endpoints とは
 
-**Service が今つなごうとしている Pod IP の一覧**です。
+**Service が今つなごうとしている Pod IP の一覧**（届け先一覧）です。
 
 - 載っている → 窓口の後ろに実体がある（届く見込み）
-- 空 → ラベル不一致などで、誰にもつながっていない
+- 空 → 付箋不一致などで、誰にもつながっていない
 
 障害のときは「Service があるか」だけでなく **Endpoints を見る**のが定石です。
 
 ---
 
-## ハンズオン
+## 実習
 
 **作業ディレクトリ:** `03-kubernetes/03-service`（またはリポジトリルートからパス指定）。
 
@@ -185,7 +185,7 @@ kubectl apply -f ../manifests/03-service.yaml
 kubectl get svc hello-svc
 ```
 
-### macOS + Docker ドライバでのアクセス（正しい挙動）
+### macOS + Docker 動かしかたでのアクセス（正しい挙動）
 
 次のメッセージが出ることがあります。**エラーではなく想定動作**です。
 
@@ -193,8 +193,8 @@ kubectl get svc hello-svc
 ❗  Because you are using a Docker driver on darwin, the terminal needs to be open to run it.
 ```
 
-意味: Minikube が Mac 上に **トンネル（橋渡し）** を張っている。  
-そのトンネルは、`minikube service` を動かしている **ターミナルを開いたまま** でないと維持されない。
+意味: Minikube が Mac 上に **橋渡し** を張っている。  
+その橋渡しは、`minikube service` を動かしている **ターミナルを開いたまま** でないと維持されない。
 
 だから **1 本のコマンドにまとめると失敗しやすい**です。
 
@@ -230,10 +230,10 @@ curl http://127.0.0.1:49982
 | コマンド | 意味 | 目的 |
 |----------|------|------|
 | `kubectl get svc` | Service 一覧 | 窓口ができたか確認 |
-| `minikube service NAME --url`（ターミナル A） | URL 表示 + トンネル維持 | Mac からクラスタ内 Service へ届く道を開く |
+| `minikube service NAME --url`（ターミナル A） | URL 表示 + 橋渡し維持 | Mac からクラスタ内 Service へ届く道を開く |
 | `curl URL`（ターミナル B） | HTTP アクセス | **Service 経由**でアプリに届くことを確認 |
 
-終わったらターミナル A で `Ctrl+C` してトンネルを閉じる。
+終わったらターミナル A で `Ctrl+C` して橋渡しを閉じる。
 
 任意（とても大事）:
 
@@ -243,7 +243,7 @@ kubectl get endpoints hello-svc
 
 | コマンド | 意味 | 目的 |
 |----------|------|------|
-| `kubectl get endpoints` | 窓口の後ろの実体一覧 | Pod IP が並んでいれば接続先がある。空ならラベルを疑う |
+| `kubectl get endpoints` | 窓口の後ろの実体一覧 | Pod IP が並んでいれば接続先がある。空なら付箋を疑う |
 
 片付け:
 
@@ -264,23 +264,23 @@ kubectl delete -f ../manifests/02-deployment.yaml
 
 1. Pod IP は変わる → 直接 IP 頼みは危ない  
 2. Service は固定の受付窓口  
-3. selector（ラベル）で「どの Pod か」を決める  
+3. selector（付箋）で「どの Pod か」を決める  
 4. 届かないときは Endpoints を見る  
 
-## トラブル時
+## うまくいかないとき
 
 | 症状 | よくある原因 | 対処 |
 |------|--------------|------|
-| `terminal needs to be open to run it` | macOS + Docker ドライバの正常メッセージ | ターミナル A で `minikube service --url` を開いたまま、B で curl |
-| curl が返らない / 固まる | トンネル用ターミナルを閉じた、または 1 コマンドにまとめた | 上記の 2 ターミナル手順にする |
-| curl 失敗（接続拒否） | Endpoints が空（ラベル不一致） | `kubectl get endpoints` / label と selector を照合 |
+| `terminal needs to be open to run it` | macOS + Docker 動かしかたの正常メッセージ | ターミナル A で `minikube service --url` を開いたまま、B で curl |
+| curl が返らない / 固まる | 橋渡し用ターミナルを閉じた、または 1 コマンドにまとめた | 上記の 2 ターミナル手順にする |
+| curl 失敗（接続拒否） | Endpoints が空（付箋不一致） | `kubectl get endpoints` / 付箋と selector を照合 |
 | URL が出ない | Service 未作成 / Minikube 未起動 | `kubectl get svc` / `minikube status` |
 
 ## 完了条件（DoD）
 
 - [ ] Service を「入れ替わる Pod への固定窓口」と説明できる
 - [ ] YAML の `selector` / `port` / `targetPort` の意味を説明できる
-- [ ] Service の中に Pod が入っているのではなく、ラベルで探してつなぐ、と言える
+- [ ] Service の中に Pod が入っているのではなく、付箋で探してつなぐ、と言える
 - [ ] Deployment / Service / Endpoints / Pod の役割の違いを言える
 - [ ] なぜ Pod IP 直打ちがまずいか言える
 - [ ] Service 経由で curl できた

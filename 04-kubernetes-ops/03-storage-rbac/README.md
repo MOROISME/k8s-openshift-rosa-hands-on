@@ -17,7 +17,7 @@ cd 04-kubernetes-ops/03-storage-rbac
 
 Pod は消えると中のファイルも消えがち。PVC は「ディスクが欲しい」という要求。
 
-### マニフェスト解説（`../manifests/pvc-demo.yaml`）
+### YAML設定の解説（`../manifests/pvc-demo.yaml`）
 
 1 ファイルに Namespace + PVC + Deployment（`---` 区切り）。
 
@@ -58,19 +58,19 @@ volumes:
 
 | フィールド | 意味 | 目的 |
 |------------|------|------|
-| `volumes[].persistentVolumeClaim` | PVC をボリュームとして使う | `demo-pvc` を Pod に紐づける |
+| `volumes[].persistentVolumeClaim` | PVC をディスク領域として使う | `demo-pvc` を Pod に紐づける |
 | `volumeMounts.mountPath` | コンテナ内のパス | `/data` に見えるようにする |
 
 流れ:
 
 ```text
 ① PVC「1Gi 欲しい」と宣言
-② クラスタが実ボリュームを用意して Bound（結び付き）
+② クラスタが実ディスク領域を用意して Bound（結び付き）
 ③ Deployment が volumes + volumeMounts で /data にマウント
-④ exec で /data に書く → ボリュームが効いている証拠
+④ exec で /data に書く → ディスク領域が効いている証拠
 ```
 
-### ハンズオン（PVC）
+### 実習（PVC）
 
 #### 手順 0: クラスタが生きているか確認（必須）
 
@@ -149,11 +149,11 @@ deployment.apps/pvc-demo created
 kubectl get pvc -n ops-learn
 ```
 
-| オプション / 列 | 意味 | 目的 |
+| 追加の指定 / 列 | 意味 | 目的 |
 |-----------------|------|------|
 | `-n ops-learn` | Namespace 指定 | 仕切りの中だけ見る |
-| `STATUS` | PVC の状態 | **`Bound`** = 実ボリュームと結び付いた（成功） |
-| `VOLUME` | 実際に割り当てられたボリューム名 | 要求（PVC）に実体が付いた印 |
+| `STATUS` | PVC の状態 | **`Bound`** = 実ディスク領域と結び付いた（成功） |
+| `VOLUME` | 実際に割り当てられたディスク領域名 | 要求（PVC）に実体が付いた印 |
 | `CAPACITY` | 容量 | だいたい `1Gi` |
 | `STORAGECLASS` | どの種類のストレージか | Minikube では `standard` が多い |
 
@@ -186,7 +186,7 @@ NAME                        READY   STATUS    RESTARTS   AGE
 pvc-demo-xxxxxxxxxx-xxxxx   1/1     Running   0          ...
 ```
 
-#### 手順 4: `/data` に書いて読む（ボリューム確認）
+#### 手順 4: `/data` に書いて読む（ディスク領域確認）
 
 ```bash
 kubectl exec -n ops-learn deploy/pvc-demo -- sh -c 'echo hello > /data/hello.txt && cat /data/hello.txt'
@@ -210,7 +210,7 @@ kubectl exec -n ops-learn deploy/pvc-demo -- sh -c 'echo hello > /data/hello.txt
 hello
 ```
 
-`hello` と出れば、「PVC → ボリューム → `/data` マウント」までつながっています。
+`hello` と出れば、「PVC → ディスク領域 → `/data` マウント」までつながっています。
 
 任意（中に入って自分で触る）:
 
@@ -246,7 +246,7 @@ kubectl delete -f ../manifests/pvc-demo.yaml
 
 Role / RoleBinding で「誰が何をできるか」を制御。権限不足は現場頻出。
 
-### マニフェスト解説（`../manifests/rbac-demo.yaml`）
+### YAML設定の解説（`../manifests/rbac-demo.yaml`）
 
 **ServiceAccount（誰）:**
 
@@ -272,7 +272,7 @@ rules:
 
 | フィールド | 意味 | 目的 |
 |------------|------|------|
-| `resources: ["pods"]` | 対象リソース | Pod だけ |
+| `resources: ["pods"]` | 対象のもの | Pod だけ |
 | `verbs: get,list,watch` | 許可する操作 | 読む系のみ（delete は無し） |
 
 **RoleBinding（誰にその Role を付けるか）:**
@@ -297,7 +297,7 @@ Role（pod-reader）＝ get/list/watch だけ可
 can-i get → yes / can-i delete → no
 ```
 
-### ハンズオン（RBAC）
+### 実習（RBAC）
 
 作業ディレクトリは引き続き:
 
@@ -342,7 +342,7 @@ kubectl auth can-i get pods -n ops-rbac --as=system:serviceaccount:ops-rbac:read
 | 部分 | 意味 | 目的 |
 |------|------|------|
 | `auth can-i` | 「この操作は許される？」と API に聞く | 実際に削除せずに権限テスト |
-| `get pods` | 動詞 + リソース | Role の `verbs` / `resources` と対応 |
+| `get pods` | 動詞 + もの | Role の `verbs` / `resources` と対応 |
 | `-n ops-rbac` | どの Namespace か | Role は Namespace 付きなので範囲を合わせる |
 | `--as=system:serviceaccount:ops-rbac:readonly-sa` | **自分ではなく**その SA のつもりで聞く | 「readonly-sa ならできるか？」 |
 
@@ -398,7 +398,7 @@ kubectl delete -f ../manifests/pvc-demo.yaml
 | `can-i get pods ...` | `yes` |
 | `can-i delete pods ...` | `no` |
 
-## よくあるつまずき
+## うまくいかないとき
 
 | 症状 | 原因 | 対処 |
 |------|------|------|
